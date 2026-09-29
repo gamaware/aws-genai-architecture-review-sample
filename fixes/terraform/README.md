@@ -1,14 +1,18 @@
 # Terraform fixes
 
-One change to the production account that closes the account-level findings of the review: a versioned guardrail
-with PII anonymization, model invocation logging, a customer managed KMS key with encrypted, expiring log groups,
-one application inference profile per route, scoped IAM policies for the runtime and enrich roles, per-channel API
-throttling, and an S3 Vectors knowledge base to replace the OpenSearch Serverless collection.
+One change to the production account that closes the account-level findings of the review: a versioned guardrail with
+PII anonymization, model invocation logging with metadata only (Bedrock logs the original prompt even when the guardrail
+anonymizes it, so text data delivery stays off), a customer managed KMS key with encrypted, expiring log groups, one
+application inference profile per route, scoped IAM policies for the runtime and enrich roles, per-channel API
+throttling with an API key required on the ask and compare methods, and an S3 Vectors knowledge base to replace the
+OpenSearch Serverless collection.
 
 The configuration reads the client's existing role names, REST API ID and stage as variables. Before the first apply,
 the client imports the three Lambda log groups (`terraform import 'aws_cloudwatch_log_group.functions["ask"]'
-/aws/lambda/product-assistant-ask`, and the same for compare and enrich), then removes the `bedrock:*` statement from
-the runtime role once the scoped policy is in place.
+/aws/lambda/product-assistant-ask`, and the same for compare and enrich) and the two API methods (`terraform import
+'aws_api_gateway_method.assistant["ask"]' abc123/a1b2c3/POST`, and the same for compare). After the apply, it deploys
+the stage so the methods require an API key, gives each channel its key, and removes the `bedrock:*` statement from the
+runtime role once the scoped policy is in place.
 
 Tests run offline against a mocked provider: `terraform test` (`tests/fixes.tftest.hcl` asserts the controls each
 finding needs; `tests/validation.tftest.hcl` checks the input rules).
@@ -32,7 +36,9 @@ finding needs; `tests/validation.tftest.hcl` checks the input rules).
 | Name | Type |
 | ---- | ---- |
 | [aws_api_gateway_api_key.channel](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_api_key) | resource |
+| [aws_api_gateway_method.assistant](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_method) | resource |
 | [aws_api_gateway_method_settings.all](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_method_settings) | resource |
+| [aws_api_gateway_request_validator.assistant](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_request_validator) | resource |
 | [aws_api_gateway_usage_plan.channel](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_usage_plan) | resource |
 | [aws_api_gateway_usage_plan_key.channel](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_usage_plan_key) | resource |
 | [aws_bedrock_guardrail.assistant](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/bedrock_guardrail) | resource |
@@ -68,6 +74,8 @@ finding needs; `tests/validation.tftest.hcl` checks the input rules).
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
 | alarm\_topic\_arn | SNS topic that receives throttling alarms. | `string` | `"arn:aws:sns:us-east-1:111122223333:product-assistant-alerts"` | no |
+| api\_methods | Methods of the REST API that call the model, keyed by route; each must require an API key. | ```map(object({ resource_id = string http_method = string }))``` | ```{ "ask": { "http_method": "POST", "resource_id": "a1b2c3" }, "compare": { "http_method": "POST", "resource_id": "d4e5f6" } }``` | no |
+| authorizer\_id | ID of the existing Cognito authorizer on the REST API. | `string` | `"cog123"` | no |
 | batch\_service\_role\_arn | Service role Bedrock batch inference assumes to read and write the enrich job's S3 prefix. | `string` | `"arn:aws:iam::111122223333:role/product-assistant-batch"` | no |
 | channels | Per-channel API quotas: steady rate (requests per second), burst and daily request quota. | ```map(object({ rate_limit = number burst_limit = number daily_quota = number }))``` | ```{ "kiosk": { "burst_limit": 10, "daily_quota": 3000, "rate_limit": 5 }, "mobile": { "burst_limit": 30, "daily_quota": 12000, "rate_limit": 15 }, "web": { "burst_limit": 80, "daily_quota": 40000, "rate_limit": 40 } }``` | no |
 | cost\_center | Cost center tag on the application inference profiles. | `string` | `"digital-product"` | no |

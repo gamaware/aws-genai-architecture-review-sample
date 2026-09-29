@@ -84,12 +84,12 @@
       "fixes/terraform/inference_profiles.tf"
     ],
     "key": "GA-04",
-    "monthly_change_usd": -9918.0,
+    "monthly_change_usd": -10909.8,
     "observed": "ask uses claude-sonnet; claude-haiku passes 93.6% overall, 90% in its weakest category",
     "owner": "Product engineering",
     "phase": "Weeks 3-6",
     "pillar": "Cost optimization",
-    "recommendation": "Move the ask route to Claude Haiku through its application inference profile once the evaluation stage is in the pipeline. Keep Claude Sonnet on compare, where Haiku falls below the bar.",
+    "recommendation": "Move the ask route to Claude Haiku through its application inference profile once the evaluation stage is in the pipeline. Keep Claude Sonnet on compare, where Haiku falls below the bar. On Claude Haiku the ask route's 2,400-token system prompt is below the 4,096-token cache minimum, so that route gets no caching saving.",
     "risk": "medium",
     "title": "The ask route uses Claude Sonnet where Claude Haiku meets the quality bar"
   },
@@ -106,12 +106,12 @@
       "fixes/app/assistant.py"
     ],
     "key": "GA-05",
-    "monthly_change_usd": -2729.7,
+    "monthly_change_usd": -1000.89,
     "observed": "PROMPT_CACHING is off on ask, compare (system prompt tokens: ask 2,400, compare 2,400)",
     "owner": "Product engineering",
     "phase": "Weeks 3-6",
     "pillar": "Cost optimization",
-    "recommendation": "Put a cache point after the system prompt in each Converse request so repeated requests read the prefix from the cache.",
+    "recommendation": "Put a cache point after the system prompt on each route whose prompt reaches the model's minimum cacheable length: 1,024 tokens for Claude Sonnet 4.5, 4,096 for Claude Haiku 4.5. That is the compare route; once the ask route moves to Claude Haiku its 2,400-token prompt is below the minimum, so it gets no cache point.",
     "risk": "medium",
     "title": "Every interactive request pays full price for the 2,400-token system prompt"
   },
@@ -153,11 +153,11 @@
     ],
     "key": "GA-07",
     "monthly_change_usd": 0.0,
-    "observed": "stage throttling unset (rate limit -1); 0 usage plans",
+    "observed": "stage throttling unset (rate limit -1); 0 usage plans; 2 of 2 methods accept requests without an API key",
     "owner": "Platform team",
     "phase": "Weeks 3-6",
     "pillar": "Operational excellence",
-    "recommendation": "Set stage-level throttling and one usage plan per channel (web, mobile app, store kiosk) with rate, burst and daily quota, and alarm when the 4XX rate climbs.",
+    "recommendation": "Set stage-level throttling and one usage plan per channel (web, mobile app, store kiosk) with rate, burst and daily quota, require an API key on the ask and compare methods (a usage plan only applies to methods that require one), and alarm when the 4XX rate climbs.",
     "risk": "medium",
     "title": "The API has no throttling and no per-channel quota"
   },
@@ -172,6 +172,7 @@
     ],
     "fix": [
       "fixes/pipeline/evaluate-stage.yaml",
+      "fixes/pipeline/golden-set.json",
       "fixes/app/eval_gate.py"
     ],
     "key": "GA-08",
@@ -180,7 +181,7 @@
     "owner": "Product engineering",
     "phase": "Weeks 3-6",
     "pillar": "Operational excellence",
-    "recommendation": "Run the golden set in the pipeline between deploy-staging and deploy-production, and block the release when the pass rate falls under 90% overall or 85% in any category.",
+    "recommendation": "Run the golden set in the pipeline between deploy-staging and deploy-production, and block the release when the pass rate falls under 90% overall or 85% in any category, or when the run misses a route, the shipping model, a category or part of its questions.",
     "risk": "medium",
     "title": "No evaluation runs before a prompt or model change reaches production"
   },
@@ -196,12 +197,12 @@
       "fixes/terraform/logging.tf"
     ],
     "key": "GA-09",
-    "monthly_change_usd": 11.77,
+    "monthly_change_usd": 1.18,
     "observed": "get-model-invocation-logging-configuration returns no loggingConfig",
     "owner": "Platform team",
     "phase": "Weeks 3-6",
     "pillar": "Security",
-    "recommendation": "Enable Bedrock model invocation logging to a KMS-encrypted CloudWatch Logs group with one-year retention, with the guardrail masking PII before logging.",
+    "recommendation": "Enable Bedrock model invocation logging to a KMS-encrypted CloudWatch Logs group with one-year retention, with text data delivery off so each record holds the request metadata and token counts only. Bedrock logs the original input even when the guardrail anonymizes PII, so text delivery would copy raw prompts into the logs.",
     "risk": "medium",
     "title": "Model invocation logging is off"
   },
@@ -219,7 +220,7 @@
       "fixes/terraform/iam.tf"
     ],
     "key": "GA-10",
-    "monthly_change_usd": -360.0,
+    "monthly_change_usd": -396.0,
     "observed": "offline routes on on-demand inference: enrich",
     "owner": "Product engineering",
     "phase": "Weeks 7-10",

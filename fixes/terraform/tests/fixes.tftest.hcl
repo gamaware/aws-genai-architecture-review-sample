@@ -31,8 +31,13 @@ run "logs_are_encrypted_expire_and_capture_invocations" {
   command = apply
 
   assert {
-    condition     = aws_bedrock_model_invocation_logging_configuration.this.logging_config[0].text_data_delivery_enabled
-    error_message = "Invocation logging must deliver text data."
+    condition     = !aws_bedrock_model_invocation_logging_configuration.this.logging_config[0].text_data_delivery_enabled
+    error_message = "Invocation logging must not deliver text data: Bedrock logs the original prompt, PII included, even when the guardrail anonymizes it."
+  }
+
+  assert {
+    condition     = aws_bedrock_model_invocation_logging_configuration.this.logging_config[0].cloudwatch_config[0].log_group_name == aws_cloudwatch_log_group.invocations.name
+    error_message = "Invocation logging must write to the encrypted invocations log group."
   }
 
   assert {
@@ -100,6 +105,11 @@ run "every_channel_is_throttled" {
   assert {
     condition     = length(aws_api_gateway_usage_plan.channel) == 3 && alltrue([for p in aws_api_gateway_usage_plan.channel : p.quota_settings[0].period == "DAY"])
     error_message = "Each channel needs a usage plan with a daily quota."
+  }
+
+  assert {
+    condition     = toset(keys(aws_api_gateway_method.assistant)) == toset(["ask", "compare"]) && alltrue([for m in aws_api_gateway_method.assistant : m.api_key_required])
+    error_message = "The ask and compare methods must require an API key, or the usage plans do not apply to them."
   }
 
   assert {

@@ -6,9 +6,10 @@ Accepted
 
 ## Context
 
-Savings levers interact: prompt caching saves less once a route moves to a cheaper model, and a guardrail fix adds
-cost. Pricing each lever against the as-found state would double-count, and the lever figures would not add up to
-the total. A model built from traffic figures is also only as good as those figures.
+Savings levers interact: prompt caching saves less once a route moves to a cheaper model, or nothing when that model's
+minimum cacheable prefix is longer than the route's system prompt, and a guardrail fix adds cost. Pricing each lever
+against the as-found state would double-count, and the lever figures would not add up to the total. A model built from
+traffic figures is also only as good as those figures.
 
 ## Decision
 

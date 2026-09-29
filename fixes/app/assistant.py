@@ -4,7 +4,10 @@ Changes against the as-found handler:
 
 - every request carries the route's guardrail by ID and version, and the shopper's question is marked as guard
   content, so input filters (prompt attack, PII) run on the question and output filters on the answer;
-- a cache point follows the static system prompt, so repeated requests read that prefix from the prompt cache;
+- on routes whose system prompt reaches the model's minimum cacheable length (1,024 tokens for Claude Sonnet 4.5,
+  4,096 for Claude Haiku 4.5), a cache point follows it, so repeated requests read that prefix from the prompt cache.
+  The compare route (Sonnet, 2,400 tokens) sets `cache_system_prompt`; the ask route (Haiku, 2,400 tokens) does not,
+  because Bedrock ignores a checkpoint on a shorter prefix;
 - the response length is capped per route;
 - logs carry request metadata and token counts only, never the prompt or the answer; error text is redacted;
 - throttling is retried with capped exponential backoff instead of surfacing as a 500 to the shopper.
@@ -43,6 +46,7 @@ class RouteConfig:
     guardrail_version: str
     max_tokens: int
     system_prompt: str
+    cache_system_prompt: bool = False
 
     def __post_init__(self) -> None:
         if not self.guardrail_id or not self.guardrail_version:
@@ -73,9 +77,12 @@ def redact(text: str) -> str:
 
 def build_request(config: RouteConfig, question: Question) -> dict[str, Any]:
     context_text = "\n\n".join(question.context)
+    system: list[dict[str, Any]] = [{"text": config.system_prompt}]
+    if config.cache_system_prompt:
+        system.append({"cachePoint": {"type": "default"}})
     return {
         "modelId": config.model_id,
-        "system": [{"text": config.system_prompt}, {"cachePoint": {"type": "default"}}],
+        "system": system,
         "messages": [
             {
                 "role": "user",

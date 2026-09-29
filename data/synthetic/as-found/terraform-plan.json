@@ -39,6 +39,32 @@
           }
         },
         {
+          "address": "aws_api_gateway_method.ask",
+          "type": "aws_api_gateway_method",
+          "name": "ask",
+          "values": {
+            "rest_api_id": "abc123",
+            "resource_id": "a1b2c3",
+            "http_method": "POST",
+            "authorization": "COGNITO_USER_POOLS",
+            "authorizer_id": "cog123",
+            "api_key_required": false
+          }
+        },
+        {
+          "address": "aws_api_gateway_method.compare",
+          "type": "aws_api_gateway_method",
+          "name": "compare",
+          "values": {
+            "rest_api_id": "abc123",
+            "resource_id": "d4e5f6",
+            "http_method": "POST",
+            "authorization": "COGNITO_USER_POOLS",
+            "authorizer_id": "cog123",
+            "api_key_required": false
+          }
+        },
+        {
           "address": "aws_cognito_user_pool.shoppers",
           "type": "aws_cognito_user_pool",
           "name": "shoppers",

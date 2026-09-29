@@ -52,7 +52,11 @@ A failed check becomes a finding with the risk, effort, owner, impact and recomm
 The model prices one month twice from the same traffic, as found and after the fixes, and splits the difference by
 lever ([ADR 0003](adr/0003-sequential-levers-reconciled-with-cur.md)). The as-found figure must reconcile with the
 bill before any saving goes into the report. The model prices the fixes that add cost (guardrail coverage, invocation
-logging) too.
+logging) too. Token prices follow the inference profile the workload calls: geographic profiles (`us.`, `eu.`, `apac.`)
+carry a premium over global ones for recent Claude models, and a cache point only counts when the cached prefix reaches
+the model's minimum. After the fixes the functions call application inference profile ARNs; the checks resolve each
+ARN to its model and Regions through the `list-inference-profiles` export, so a re-review prices and checks the same
+routes.
 
 ## 7. Fixes
 

@@ -65,5 +65,6 @@ assumptions:
   prompt_cache_hit_rate: 0.95
   chars_per_token: 4
   guardrail_text_unit_chars: 1000
-  invocation_log_kb_per_request: 20
+  # Invocation logs carry metadata and token counts only (text data delivery off), about 2 KB per record.
+  invocation_log_kb_per_request: 2
   hours_per_month: 730

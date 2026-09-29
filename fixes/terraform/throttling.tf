@@ -1,4 +1,5 @@
-# GA: api-throttling. A stage-wide ceiling, one usage plan per channel, and an alarm when clients get throttled.
+# GA: api-throttling. A stage-wide ceiling, one usage plan per channel, keyed methods so the plans apply, and an
+# alarm when clients get throttled.
 resource "aws_api_gateway_method_settings" "all" {
   # checkov:skip=CKV_AWS_225:Answers are per shopper and per conversation; a response cache would serve one shopper's answer to another.
   rest_api_id = var.rest_api_id
@@ -11,6 +12,30 @@ resource "aws_api_gateway_method_settings" "all" {
     throttling_rate_limit  = var.stage_rate_limit
     throttling_burst_limit = var.stage_burst_limit
   }
+}
+
+# A usage plan throttles and meters only the methods that require an API key; a keyless method bypasses every quota.
+# The ask and compare methods exist in the client's stack; `terraform import` brings them under this configuration
+# (as with the log groups), and the stage needs a new deployment after the apply for the change to take effect. Each
+# channel's client sends its key in the x-api-key header next to the Cognito token.
+resource "aws_api_gateway_method" "assistant" {
+  for_each = var.api_methods
+
+  rest_api_id          = var.rest_api_id
+  resource_id          = each.value.resource_id
+  http_method          = each.value.http_method
+  authorization        = "COGNITO_USER_POOLS"
+  authorizer_id        = var.authorizer_id
+  api_key_required     = true
+  request_validator_id = aws_api_gateway_request_validator.assistant.id
+}
+
+# Rejects malformed requests at the edge, before they reach a function or spend tokens.
+resource "aws_api_gateway_request_validator" "assistant" {
+  name                        = "${var.name_prefix}-body-and-parameters"
+  rest_api_id                 = var.rest_api_id
+  validate_request_body       = true
+  validate_request_parameters = true
 }
 
 resource "aws_api_gateway_usage_plan" "channel" {

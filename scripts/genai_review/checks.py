@@ -99,9 +99,13 @@ def pii_in_logs(review: Review) -> Result:
 @check("invocation-logging")
 def invocation_logging(review: Review) -> Result:
     config = review.snapshot.bedrock_settings["get-model-invocation-logging-configuration"]
-    if not config.get("loggingConfig"):
+    logging_config = config.get("loggingConfig")
+    if not logging_config:
         return Result(False, "get-model-invocation-logging-configuration returns no loggingConfig")
-    return Result(True, "model invocation logging is configured")
+    if logging_config.get("textDataDeliveryEnabled"):
+        # Bedrock logs the original input even when a guardrail anonymizes PII, so text delivery keeps raw prompts.
+        return Result(False, "invocation logging delivers text data, which keeps raw prompts and their PII")
+    return Result(True, "model invocation logging is configured, metadata and token counts only")
 
 
 @check("api-throttling")
@@ -113,12 +117,16 @@ def api_throttling(review: Review) -> Result:
     ]
     throttled = any(s.get("throttling_rate_limit", -1) > 0 for s in settings)
     plans = review.snapshot.resources_of("aws_api_gateway_usage_plan")
-    if not throttled or not plans:
+    methods = review.snapshot.resources_of("aws_api_gateway_method")
+    keyless = sorted(name for name, res in methods.items() if not res["values"].get("api_key_required"))
+    # A usage plan only meters and throttles methods that require an API key; keyless methods bypass its quota.
+    if not throttled or not plans or keyless:
         return Result(
             False,
-            f"stage throttling {'set' if throttled else 'unset (rate limit -1)'}; {len(plans)} usage plans",
+            f"stage throttling {'set' if throttled else 'unset (rate limit -1)'}; {len(plans)} usage plans; "
+            f"{len(keyless)} of {len(methods)} methods accept requests without an API key",
         )
-    return Result(True, f"stage throttling set and {len(plans)} usage plans")
+    return Result(True, f"stage throttling set, {len(plans)} usage plans and every method requires an API key")
 
 
 @check("eval-in-pipeline")
@@ -147,18 +155,70 @@ def qualifies(rate: dict[str, float]) -> bool:
     return rate["overall"] >= EVAL_OVERALL_BAR and rate["min_category"] >= EVAL_CATEGORY_BAR
 
 
+APPLICATION_PROFILES = "list-inference-profiles --type-equals APPLICATION"
+APPLICATION_PROFILE_ARN = ":application-inference-profile/"
+
+
+def _application_profile(review: Review, arn: str) -> dict:
+    for summary in review.snapshot.bedrock_settings[APPLICATION_PROFILES]["inferenceProfileSummaries"]:
+        if summary.get("inferenceProfileArn") == arn:
+            return summary
+    raise KeyError(f"application inference profile {arn} is not in the Bedrock settings export")
+
+
+def _profile_models(summary: dict) -> tuple[set[str], set[str]]:
+    """Foundation model IDs and Regions behind an application inference profile."""
+    models, regions = set(), set()
+    for model in summary.get("models", []):
+        arn = model["modelArn"]
+        models.add(arn.split("foundation-model/", 1)[1])
+        regions.add(arn.split(":")[3])
+    return models, regions
+
+
 def model_key(review: Review, model_id: str) -> str:
+    """Pricing key of a MODEL_ID: a system inference profile ID or an application inference profile ARN."""
     for key, model in review.pricing["models"].items():
         if model["model_id"] == model_id:
             return key
+    if APPLICATION_PROFILE_ARN in model_id:
+        models, _ = _profile_models(_application_profile(review, model_id))
+        keys = [key for key, model in review.pricing["models"].items() if model["foundation_model"] in models]
+        if len(keys) == 1:
+            return keys[0]
+        raise KeyError(f"application inference profile {model_id} resolves to models {sorted(models)}, not one priced")
     raise KeyError(f"model {model_id} has no price in data/pricing.yaml")
+
+
+def is_cross_region(review: Review, model_id: str) -> bool:
+    """True for a cross-Region system profile ID, or an application profile copied from one (models in 2+ Regions)."""
+    if model_id.startswith(CROSS_REGION_PREFIXES):
+        return True
+    if APPLICATION_PROFILE_ARN in model_id:
+        _, regions = _profile_models(_application_profile(review, model_id))
+        return len(regions) > 1
+    return False
+
+
+def unit_prices(review: Review, key: str) -> dict[str, float]:
+    """Per-1M-token prices of a model, with the geographic premium when its profile is geographic (us., eu., apac.)."""
+    model = review.pricing["models"][key]
+    factor = 1.0
+    if model["model_id"].startswith(tuple(review.pricing["geographic_prefixes"])):
+        factor += model["geographic_premium"]
+    return {kind: model[kind] * factor for kind in ("input", "output", "cache_write", "cache_read")}
+
+
+def cacheable(review: Review, route: str, key: str) -> bool:
+    """A cache point after the system prompt only takes effect when the prompt reaches the model's minimum."""
+    return review.routes[route]["system_prompt_tokens"] >= review.pricing["models"][key]["min_cache_tokens"]
 
 
 def blended_price(review: Review, key: str, route: dict) -> float:
     """Price of one average request on a route, for ranking candidate models."""
-    model = review.pricing["models"][key]
+    prices = unit_prices(review, key)
     tokens_in = route["system_prompt_tokens"] + route["context_tokens"] + route["user_tokens"]
-    return tokens_in * model["input"] + route["output_tokens"] * model["output"]
+    return tokens_in * prices["input"] + route["output_tokens"] * prices["output"]
 
 
 def cheapest_qualifying(review: Review, route: str) -> str:
@@ -186,10 +246,21 @@ def right_sized_model(review: Review) -> Result:
 
 @check("prompt-caching")
 def prompt_caching(review: Review) -> Result:
-    off = [r for r in INTERACTIVE_ROUTES if review.snapshot.lambda_env(r).get("PROMPT_CACHING") != "true"]
+    off, below = [], []
+    for route in INTERACTIVE_ROUTES:
+        env = review.snapshot.lambda_env(route)
+        key = model_key(review, env["MODEL_ID"])
+        if not cacheable(review, route, key):
+            below.append(f"{route} ({key} caches from {review.pricing['models'][key]['min_cache_tokens']:,} tokens)")
+        elif env.get("PROMPT_CACHING") != "true":
+            off.append(route)
     if off:
         tokens = ", ".join(f"{r} {review.routes[r]['system_prompt_tokens']:,}" for r in off)
         return Result(False, f"PROMPT_CACHING is off on {', '.join(off)} (system prompt tokens: {tokens})")
+    if below:
+        return Result(
+            True, f"prompt caching is on where it applies; system prompt below the minimum on {', '.join(below)}"
+        )
     return Result(True, "prompt caching is on for every interactive route")
 
 
@@ -223,8 +294,7 @@ def batch_for_offline_jobs(review: Review) -> Result:
 
 @check("application-inference-profiles")
 def application_inference_profiles(review: Review) -> Result:
-    listed = "list-inference-profiles --type-equals APPLICATION"
-    profiles = review.snapshot.bedrock_settings[listed]["inferenceProfileSummaries"]
+    profiles = review.snapshot.bedrock_settings[APPLICATION_PROFILES]["inferenceProfileSummaries"]
     if len(profiles) < len(review.routes):
         return Result(False, f"{len(profiles)} application inference profiles for {len(review.routes)} routes")
     return Result(True, f"{len(profiles)} application inference profiles")
@@ -233,13 +303,11 @@ def application_inference_profiles(review: Review) -> Result:
 @check("cross-region-inference")
 def cross_region_inference(review: Review) -> Result:
     single = [
-        r
-        for r in _lambda_routes(review)
-        if not review.snapshot.lambda_env(r)["MODEL_ID"].startswith(CROSS_REGION_PREFIXES)
+        r for r in _lambda_routes(review) if not is_cross_region(review, review.snapshot.lambda_env(r)["MODEL_ID"])
     ]
     if single:
         return Result(False, f"single-Region model IDs on: {', '.join(single)}")
-    return Result(True, "every route calls a cross-Region inference profile (us. prefix)")
+    return Result(True, "every route calls a cross-Region inference profile")
 
 
 @check("max-tokens-set")

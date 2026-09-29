@@ -4,11 +4,26 @@
 # Prices change; an engagement re-checks every value here against the pricing pages before the report goes out.
 currency: USD
 
+# Geographic cross-Region inference profiles (the us., eu. and apac. prefixes) cost more than global profiles for
+# Claude Sonnet 4.5, Claude Haiku 4.5 and later Claude models: "Regional and multi-region endpoints include a 10%
+# premium over global endpoints" (https://platform.claude.com/docs/en/about-claude/pricing, section "Regional and
+# multi-region endpoint pricing"; the geographic rows of https://aws.amazon.com/bedrock/pricing/). The cost model
+# multiplies every token price of a model by (1 + geographic_premium) when its model_id carries a geographic prefix.
+# Amazon Nova models have no geographic premium.
+geographic_prefixes: [us., eu., apac.]
+
 models:
-  # Per 1M tokens. Cache write and cache read apply to prompt caching.
+  # Per 1M tokens, global list prices. Cache write and cache read apply to prompt caching.
+  # foundation_model: the model ID behind the profile, used to resolve application inference profile ARNs.
+  # min_cache_tokens: the smallest prompt prefix a cache checkpoint accepts; a shorter prefix is never cached
+  # (https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html, "Supported models, Regions, and
+  # explicit caching limits").
   claude-sonnet:
     label: Claude Sonnet 4.5
     model_id: us.anthropic.claude-sonnet-4-5-20250929-v1:0
+    foundation_model: anthropic.claude-sonnet-4-5-20250929-v1:0
+    geographic_premium: 0.10
+    min_cache_tokens: 1024
     input: 3.00
     output: 15.00
     cache_write: 3.75
@@ -16,6 +31,9 @@ models:
   claude-haiku:
     label: Claude Haiku 4.5
     model_id: us.anthropic.claude-haiku-4-5-20251001-v1:0
+    foundation_model: anthropic.claude-haiku-4-5-20251001-v1:0
+    geographic_premium: 0.10
+    min_cache_tokens: 4096
     input: 1.00
     output: 5.00
     cache_write: 1.25
@@ -23,6 +41,9 @@ models:
   nova-lite:
     label: Amazon Nova Lite
     model_id: us.amazon.nova-lite-v1:0
+    foundation_model: amazon.nova-lite-v1:0
+    geographic_premium: 0.0
+    min_cache_tokens: 1000
     input: 0.06
     output: 0.24
     cache_write: 0.06

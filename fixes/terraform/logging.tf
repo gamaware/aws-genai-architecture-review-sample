@@ -1,4 +1,5 @@
-# GA: invocation-logging and pii-in-logs. Invocation logs and the Lambda logs are KMS-encrypted and expire.
+# GA: invocation-logging and pii-in-logs. Invocation logs (metadata only) and the Lambda logs are KMS-encrypted and
+# expire.
 resource "aws_cloudwatch_log_group" "invocations" {
   name              = "/aws/bedrock/${var.name_prefix}/invocations"
   retention_in_days = var.log_retention_days
@@ -56,9 +57,12 @@ resource "aws_iam_role_policy" "bedrock_logging" {
   policy = data.aws_iam_policy_document.bedrock_logging.json
 }
 
+# Metadata only: each record keeps the caller identity, model, request ID and token counts, never the prompt or the
+# answer. Bedrock logs the original input even when the guardrail anonymizes PII, so text delivery would copy raw
+# shopper prompts, phone numbers included, into this log group for a year.
 resource "aws_bedrock_model_invocation_logging_configuration" "this" {
   logging_config {
-    text_data_delivery_enabled      = true
+    text_data_delivery_enabled      = false
     embedding_data_delivery_enabled = false
     image_data_delivery_enabled     = false
     video_data_delivery_enabled     = false

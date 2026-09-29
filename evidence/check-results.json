@@ -1,6 +1,6 @@
 {
   "api-throttling": {
-    "observed": "stage throttling unset (rate limit -1); 0 usage plans",
+    "observed": "stage throttling unset (rate limit -1); 0 usage plans; 2 of 2 methods accept requests without an API key",
     "passed": false
   },
   "application-inference-profiles": {
@@ -12,7 +12,7 @@
     "passed": false
   },
   "cross-region-inference": {
-    "observed": "every route calls a cross-Region inference profile (us. prefix)",
+    "observed": "every route calls a cross-Region inference profile",
     "passed": true
   },
   "eval-in-pipeline": {

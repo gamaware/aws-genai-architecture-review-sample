@@ -56,6 +56,24 @@ variable "rest_api_id" {
   default     = "abc123"
 }
 
+variable "authorizer_id" {
+  description = "ID of the existing Cognito authorizer on the REST API."
+  type        = string
+  default     = "cog123"
+}
+
+variable "api_methods" {
+  description = "Methods of the REST API that call the model, keyed by route; each must require an API key."
+  type = map(object({
+    resource_id = string
+    http_method = string
+  }))
+  default = {
+    ask     = { resource_id = "a1b2c3", http_method = "POST" }
+    compare = { resource_id = "d4e5f6", http_method = "POST" }
+  }
+}
+
 variable "stage_name" {
   description = "Stage of the REST API that serves production traffic."
   type        = string

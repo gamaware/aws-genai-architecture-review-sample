@@ -52,11 +52,11 @@ checks:
     owner: Platform team
     evidence: [EV-03]
     impact: >-
-      Nobody can reconstruct which prompt produced a disputed answer, audit guardrail interventions, or attribute
-      token use to a route.
+      Nobody can audit which identity called which model and when, or attribute token use to a route and a caller.
     recommendation: >-
       Enable Bedrock model invocation logging to a KMS-encrypted CloudWatch Logs group with one-year retention, with
-      the guardrail masking PII before logging.
+      text data delivery off so each record holds the request metadata and token counts only. Bedrock logs the
+      original input even when the guardrail anonymizes PII, so text delivery would copy raw prompts into the logs.
     fix: [fixes/terraform/logging.tf]
     lever: invocation-logging
 
@@ -71,7 +71,8 @@ checks:
       and run up token spend with no ceiling.
     recommendation: >-
       Set stage-level throttling and one usage plan per channel (web, mobile app, store kiosk) with rate, burst and
-      daily quota, and alarm when the 4XX rate climbs.
+      daily quota, require an API key on the ask and compare methods (a usage plan only applies to methods that
+      require one), and alarm when the 4XX rate climbs.
     fix: [fixes/terraform/throttling.tf]
 
   - id: eval-in-pipeline
@@ -85,8 +86,9 @@ checks:
       team cannot adopt a cheaper model safely.
     recommendation: >-
       Run the golden set in the pipeline between deploy-staging and deploy-production, and block the release when
-      the pass rate falls under 90% overall or 85% in any category.
-    fix: [fixes/pipeline/evaluate-stage.yaml, fixes/app/eval_gate.py]
+      the pass rate falls under 90% overall or 85% in any category, or when the run misses a route, the shipping
+      model, a category or part of its questions.
+    fix: [fixes/pipeline/evaluate-stage.yaml, fixes/pipeline/golden-set.json, fixes/app/eval_gate.py]
 
   - id: right-sized-model
     finding: The ask route uses Claude Sonnet where Claude Haiku meets the quality bar
@@ -97,7 +99,8 @@ checks:
     impact: The ask route carries most of the token spend and pays for capability its questions do not need.
     recommendation: >-
       Move the ask route to Claude Haiku through its application inference profile once the evaluation stage is in
-      the pipeline. Keep Claude Sonnet on compare, where Haiku falls below the bar.
+      the pipeline. Keep Claude Sonnet on compare, where Haiku falls below the bar. On Claude Haiku the ask
+      route's 2,400-token system prompt is below the 4,096-token cache minimum, so that route gets no caching saving.
     fix: [fixes/terraform/inference_profiles.tf]
     lever: model-right-size
     depends_on: [eval-in-pipeline, application-inference-profiles]
@@ -110,7 +113,9 @@ checks:
     evidence: [EV-01, EV-08]
     impact: The static system prompt is more than 40% of every interactive request's input tokens.
     recommendation: >-
-      Put a cache point after the system prompt in each Converse request so repeated requests read the prefix from the cache.
+      Put a cache point after the system prompt on each route whose prompt reaches the model's minimum cacheable
+      length: 1,024 tokens for Claude Sonnet 4.5, 4,096 for Claude Haiku 4.5. That is the compare route; once the ask
+      route moves to Claude Haiku its 2,400-token prompt is below the minimum, so it gets no cache point.
     fix: [fixes/app/assistant.py]
     lever: prompt-caching
 

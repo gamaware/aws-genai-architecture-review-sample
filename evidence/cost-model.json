@@ -1,42 +1,42 @@
 {
   "after": {
-    "ask route tokens": 3139.2,
-    "compare route tokens": 2568.6,
+    "ask route tokens": 5454.9,
+    "compare route tokens": 2825.46,
     "embeddings": 2.06,
-    "enrich job tokens": 360.0,
+    "enrich job tokens": 396.0,
     "guardrails": 900.0,
-    "invocation logging": 11.77,
+    "invocation logging": 1.18,
     "vector store": 11.14
   },
-  "after_total": 6992.77,
+  "after_total": 9590.74,
   "before": {
-    "ask route tokens": 14877.0,
-    "compare route tokens": 3478.5,
+    "ask route tokens": 16364.7,
+    "compare route tokens": 3826.35,
     "embeddings": 2.06,
-    "enrich job tokens": 720.0,
+    "enrich job tokens": 792.0,
     "guardrails": 540.0,
     "invocation logging": 0.0,
     "vector store": 700.8
   },
-  "before_total": 20318.36,
+  "before_total": 22225.91,
   "cur_by_period": {
-    "month-1": 15217.79,
-    "month-2": 17571.9,
-    "month-3": 20381.36
+    "month-1": 16629.38,
+    "month-2": 19212.4,
+    "month-3": 22295.21
   },
   "levers": [
     {
-      "change": -9918.0,
+      "change": -10909.8,
       "label": "Right-size the ask route model",
       "lever": "model-right-size"
     },
     {
-      "change": -2729.7,
-      "label": "Cache the system prompt",
+      "change": -1000.89,
+      "label": "Cache the system prompt where the model allows it",
       "lever": "prompt-caching"
     },
     {
-      "change": -360.0,
+      "change": -396.0,
       "label": "Batch inference for the enrich job",
       "lever": "batch-inference"
     },
@@ -51,7 +51,7 @@
       "lever": "guardrail-coverage"
     },
     {
-      "change": 11.77,
+      "change": 1.18,
       "label": "Model invocation logging",
       "lever": "invocation-logging"
     }

@@ -20,7 +20,7 @@ measures answer quality before a change ships. The team asked for an independent
 <!-- BEGIN GENERATED: headline -->
 
 17 Generative AI Lens best practices reviewed, 6 met. 11 findings: 3 high, 6 medium and 2 low risk. The recommended
-changes take the modeled monthly bill from $20,318.36 to $6,992.77 ($13,325.59 less, 66%), after paying for the added
+changes take the modeled monthly bill from $22,225.91 to $9,590.74 ($12,635.17 less, 57%), after paying for the added
 guardrail coverage and invocation logging.
 
 <!-- END GENERATED: headline -->
@@ -188,7 +188,8 @@ Workflows start from `permissions: {}`, pin actions to full commit SHAs, and nev
 - Unit prices in `data/pricing.yaml` are list prices; an engagement re-checks them before the report goes out.
 - The checks read exports; they do not replace a penetration test or red-team exercise against the live assistant.
 - The Terraform fixes take the client's existing role names and API ID as variables. In an engagement they go through
-  the client's pipeline, staging first, and the client imports the Lambda log groups before the first apply.
+  the client's pipeline, staging first, and the client imports the Lambda log groups and the ask and compare API
+  methods before the first apply.
 
 ## Built on
 

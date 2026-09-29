@@ -36,11 +36,21 @@ def load(root: Path) -> dict:
     }
 
 
+def _price(ref: dict, model: str) -> dict:
+    """Token prices with the 10% geographic premium on us. Claude profiles; Nova has none."""
+    p = ref["prices"]["models"][model]
+    geographic = p["model_id"].split(".")[0] in ("us", "eu", "apac")
+    factor = 1 + p["geographic_premium"] if geographic else 1
+    return {k: p[k] * factor for k in ("input", "output", "cache_write", "cache_read")}
+
+
 def _tokens(ref: dict, route: str, model: str, cached: bool, batch: bool) -> float:
     r = ref["workload"]["routes"][route]
-    p = ref["prices"]["models"][model]
+    p = _price(ref, model)
     n = r["requests_per_month"]
     hit = ref["workload"]["assumptions"]["prompt_cache_hit_rate"]
+    # Caching only counts when the system prompt reaches the model's minimum checkpoint size.
+    cached = cached and r["system_prompt_tokens"] >= ref["prices"]["models"][model]["min_cache_tokens"]
     prefix_price = (hit * p["cache_read"] + (1 - hit) * p["cache_write"]) if cached else p["input"]
     dollars = (
         n * r["system_prompt_tokens"] * prefix_price

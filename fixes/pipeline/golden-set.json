@@ -1,0 +1,23 @@
+{
+  "description": "Golden set the release gate expects: the model each route ships with and the questions per category.",
+  "routes": {
+    "ask": {
+      "model": "claude-haiku",
+      "categories": {
+        "availability": 40,
+        "specifications": 40,
+        "returns-policy": 20,
+        "care-instructions": 20,
+        "sizing": 20
+      }
+    },
+    "compare": {
+      "model": "claude-sonnet",
+      "categories": {
+        "feature-tradeoffs": 30,
+        "price-value": 30,
+        "compatibility": 20
+      }
+    }
+  }
+}

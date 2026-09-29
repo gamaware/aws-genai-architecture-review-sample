@@ -32,7 +32,7 @@ already use a cross-Region inference profile, responses have a length cap, and t
 <!-- BEGIN GENERATED: headline -->
 
 17 Generative AI Lens best practices reviewed, 6 met. 11 findings: 3 high, 6 medium and 2 low risk. The recommended
-changes take the modeled monthly bill from $20,318.36 to $6,992.77 ($13,325.59 less, 66%), after paying for the added
+changes take the modeled monthly bill from $22,225.91 to $9,590.74 ($12,635.17 less, 57%), after paying for the added
 guardrail coverage and invocation logging.
 
 <!-- END GENERATED: headline -->
@@ -44,10 +44,10 @@ guardrail coverage and invocation logging.
 | Best practices reviewed (met) | 17 (6) |
 | Findings (high, medium, low) | 11 (3, 6, 2) |
 | Scripted checks (passed) | 13 (2) |
-| GenAI spend, month-1 to month-3 (CUR) | $15,217.79 to $20,381.36 (+34%) |
-| Modeled monthly cost as found | $20,318.36 |
-| Modeled monthly cost after the fixes | $6,992.77 |
-| Monthly difference | -$13,325.59 (-66%) |
+| GenAI spend, month-1 to month-3 (CUR) | $16,629.38 to $22,295.21 (+34%) |
+| Modeled monthly cost as found | $22,225.91 |
+| Modeled monthly cost after the fixes | $9,590.74 |
+| Monthly difference | -$12,635.17 (-57%) |
 | Model reconciliation with the latest CUR month | within 0.3% |
 
 <!-- END GENERATED: summary -->
@@ -122,13 +122,13 @@ share one IAM role.
 | GA-01 | High | GENSEC01-BP01 | The Lambda role allows `bedrock:*` on every resource | S | - |
 | GA-02 | High | GENSEC04-BP02 | Application logs keep customer prompts with personal data, unencrypted and forever | M | - |
 | GA-03 | High | GENSEC02-BP01 | The compare route calls the model with no guardrail | S | +$360.00 |
-| GA-04 | Medium | GENCOST01-BP01 | The ask route uses Claude Sonnet where Claude Haiku meets the quality bar | S | -$9,918.00 |
-| GA-05 | Medium | GENCOST03-BP03 | Every interactive request pays full price for the 2,400-token system prompt | S | -$2,729.70 |
+| GA-04 | Medium | GENCOST01-BP01 | The ask route uses Claude Sonnet where Claude Haiku meets the quality bar | S | -$10,909.80 |
+| GA-05 | Medium | GENCOST03-BP03 | Every interactive request pays full price for the 2,400-token system prompt | S | -$1,000.89 |
 | GA-06 | Medium | GENCOST02-BP02 | The knowledge base keeps 4 OpenSearch Serverless OCUs running for 2 GB of vectors | M | -$689.65 |
 | GA-07 | Medium | GENOPS02-BP03 | The API has no throttling and no per-channel quota | M | - |
 | GA-08 | Medium | GENOPS01-BP01 | No evaluation runs before a prompt or model change reaches production | M | - |
-| GA-09 | Medium | GENSEC03-BP01 | Model invocation logging is off | S | +$11.77 |
-| GA-10 | Low | GENCOST02-BP01 | The nightly enrich job uses on-demand inference | M | -$360.00 |
+| GA-09 | Medium | GENSEC03-BP01 | Model invocation logging is off | S | +$1.18 |
+| GA-10 | Low | GENCOST02-BP01 | The nightly enrich job uses on-demand inference | M | -$396.00 |
 | GA-11 | Low | GENOPS02-BP02 | The bill cannot show model usage by route or cost center | S | - |
 
 <!-- END GENERATED: findings-table -->
@@ -190,12 +190,13 @@ Platform team, Weeks 1-2.
 Medium risk, effort S, owner: Platform team, Weeks 3-6.
 
 - **Observed:** get-model-invocation-logging-configuration returns no loggingConfig (EV-03).
-- **Risk if left open:** Nobody can reconstruct which prompt produced a disputed answer, audit guardrail interventions,
-  or attribute token use to a route.
+- **Risk if left open:** Nobody can audit which identity called which model and when, or attribute token use to a route
+  and a caller.
 - **Recommendation:** Enable Bedrock model invocation logging to a KMS-encrypted CloudWatch Logs group with one-year
-  retention, with the guardrail masking PII before logging.
+  retention, with text data delivery off so each record holds the request metadata and token counts only. Bedrock logs
+  the original input even when the guardrail anonymizes PII, so text delivery would copy raw prompts into the logs.
 - **Fix delivered:** [`fixes/terraform/logging.tf`](../fixes/terraform/logging.tf).
-- **Monthly cost change:** +$11.77.
+- **Monthly cost change:** +$1.18.
 
 <!-- END GENERATED: findings:security -->
 
@@ -212,9 +213,10 @@ engineering, Weeks 3-6.
 - **Risk if left open:** The ask route carries most of the token spend and pays for capability its questions do not
   need.
 - **Recommendation:** Move the ask route to Claude Haiku through its application inference profile once the evaluation
-  stage is in the pipeline. Keep Claude Sonnet on compare, where Haiku falls below the bar.
+  stage is in the pipeline. Keep Claude Sonnet on compare, where Haiku falls below the bar. On Claude Haiku the ask
+  route's 2,400-token system prompt is below the 4,096-token cache minimum, so that route gets no caching saving.
 - **Fix delivered:** [`fixes/terraform/inference_profiles.tf`](../fixes/terraform/inference_profiles.tf).
-- **Monthly cost change:** -$9,918.00.
+- **Monthly cost change:** -$10,909.80.
 - **Depends on:** GA-08, GA-11.
 
 #### GA-05. Every interactive request pays full price for the 2,400-token system prompt
@@ -224,10 +226,11 @@ Weeks 3-6.
 
 - **Observed:** PROMPT_CACHING is off on ask, compare (system prompt tokens: ask 2,400, compare 2,400) (EV-01, EV-08).
 - **Risk if left open:** The static system prompt is more than 40% of every interactive request's input tokens.
-- **Recommendation:** Put a cache point after the system prompt in each Converse request so repeated requests read the
-  prefix from the cache.
+- **Recommendation:** Put a cache point after the system prompt on each route whose prompt reaches the model's minimum
+  cacheable length: 1,024 tokens for Claude Sonnet 4.5, 4,096 for Claude Haiku 4.5. That is the compare route; once the
+  ask route moves to Claude Haiku its 2,400-token prompt is below the minimum, so it gets no cache point.
 - **Fix delivered:** [`fixes/app/assistant.py`](../fixes/app/assistant.py).
-- **Monthly cost change:** -$2,729.70.
+- **Monthly cost change:** -$1,000.89.
 
 #### GA-06. The knowledge base keeps 4 OpenSearch Serverless OCUs running for 2 GB of vectors
 
@@ -254,7 +257,7 @@ engineering, Weeks 7-10.
   back in the morning run.
 - **Fix delivered:** [`fixes/app/enrich_batch.py`](../fixes/app/enrich_batch.py),
   [`fixes/terraform/iam.tf`](../fixes/terraform/iam.tf).
-- **Monthly cost change:** -$360.00.
+- **Monthly cost change:** -$396.00.
 
 <!-- END GENERATED: findings:cost-optimization -->
 
@@ -267,11 +270,13 @@ engineering, Weeks 7-10.
 *GENOPS02-BP03 Implement solutions to mitigate the risk of system overload.* Medium risk, effort M, owner: Platform
 team, Weeks 3-6.
 
-- **Observed:** stage throttling unset (rate limit -1); 0 usage plans (EV-01).
+- **Observed:** stage throttling unset (rate limit -1); 0 usage plans; 2 of 2 methods accept requests without an API key
+  (EV-01).
 - **Risk if left open:** One misbehaving client or scraper can exhaust the account's Bedrock tokens-per-minute quota for
   every channel and run up token spend with no ceiling.
 - **Recommendation:** Set stage-level throttling and one usage plan per channel (web, mobile app, store kiosk) with
-  rate, burst and daily quota, and alarm when the 4XX rate climbs.
+  rate, burst and daily quota, require an API key on the ask and compare methods (a usage plan only applies to methods
+  that require one), and alarm when the 4XX rate climbs.
 - **Fix delivered:** [`fixes/terraform/throttling.tf`](../fixes/terraform/throttling.tf).
 
 #### GA-08. No evaluation runs before a prompt or model change reaches production
@@ -283,8 +288,10 @@ team, Weeks 3-6.
 - **Risk if left open:** A prompt edit or model switch can lower answer quality without anyone noticing until shoppers
   complain, and the team cannot adopt a cheaper model safely.
 - **Recommendation:** Run the golden set in the pipeline between deploy-staging and deploy-production, and block the
-  release when the pass rate falls under 90% overall or 85% in any category.
+  release when the pass rate falls under 90% overall or 85% in any category, or when the run misses a route, the
+  shipping model, a category or part of its questions.
 - **Fix delivered:** [`fixes/pipeline/evaluate-stage.yaml`](../fixes/pipeline/evaluate-stage.yaml),
+  [`fixes/pipeline/golden-set.json`](../fixes/pipeline/golden-set.json),
   [`fixes/app/eval_gate.py`](../fixes/app/eval_gate.py).
 
 #### GA-11. The bill cannot show model usage by route or cost center
@@ -316,9 +323,9 @@ usage report, which confirms the traffic figures before the report claims any sa
 
 | Billing period | Bedrock and OpenSearch Serverless (CUR) |
 | --- | --- |
-| month-1 | $15,217.79 |
-| month-2 | $17,571.90 |
-| month-3 | $20,381.36 |
+| month-1 | $16,629.38 |
+| month-2 | $19,212.40 |
+| month-3 | $22,295.21 |
 
 <!-- END GENERATED: cur-trend -->
 
@@ -328,45 +335,51 @@ usage report, which confirms the traffic figures before the report claims any sa
 
 | Component | As found | After fixes | Change |
 | --- | --- | --- | --- |
-| ask route tokens | $14,877.00 | $3,139.20 | -$11,737.80 |
-| compare route tokens | $3,478.50 | $2,568.60 | -$909.90 |
-| enrich job tokens | $720.00 | $360.00 | -$360.00 |
+| ask route tokens | $16,364.70 | $5,454.90 | -$10,909.80 |
+| compare route tokens | $3,826.35 | $2,825.46 | -$1,000.89 |
+| enrich job tokens | $792.00 | $396.00 | -$396.00 |
 | embeddings | $2.06 | $2.06 | $0.00 |
 | guardrails | $540.00 | $900.00 | +$360.00 |
 | vector store | $700.80 | $11.14 | -$689.65 |
-| invocation logging | $0.00 | $11.77 | +$11.77 |
-| **Total** | **$20,318.36** | **$6,992.77** | **-$13,325.59** |
+| invocation logging | $0.00 | $1.18 | +$1.18 |
+| **Total** | **$22,225.91** | **$9,590.74** | **-$12,635.17** |
 
 <!-- END GENERATED: cost-components -->
 
 ### 5.2 By lever
 
 The model prices each lever on top of the levers above it, so the figures add up to the net change. The order changes the
-split, not the total: caching saves less once the ask route runs on the cheaper model.
+split, not the total: once the ask route runs on Claude Haiku, caching saves nothing there, because its system prompt
+is below Haiku's minimum cacheable length.
 
 <!-- BEGIN GENERATED: cost-levers -->
 
 | Lever (applied in this order) | Finding | Monthly change |
 | --- | --- | --- |
-| Right-size the ask route model | GA-04 | -$9,918.00 |
-| Cache the system prompt | GA-05 | -$2,729.70 |
-| Batch inference for the enrich job | GA-10 | -$360.00 |
+| Right-size the ask route model | GA-04 | -$10,909.80 |
+| Cache the system prompt where the model allows it | GA-05 | -$1,000.89 |
+| Batch inference for the enrich job | GA-10 | -$396.00 |
 | Move the knowledge base to S3 Vectors | GA-06 | -$689.65 |
 | Guardrail with PII filter on every route | GA-03 | +$360.00 |
-| Model invocation logging | GA-09 | +$11.77 |
-| **Net change** | - | **-$13,325.59** |
+| Model invocation logging | GA-09 | +$1.18 |
+| **Net change** | - | **-$12,635.17** |
 
 <!-- END GENERATED: cost-levers -->
 
 Assumptions behind the recommended state, all in [`data/synthetic/workload.yaml`](../data/synthetic/workload.yaml):
 
-- 95% of interactive requests read the system prompt from the prompt cache; the rest write it.
+- Token prices carry the 10% premium for geographic (`us.`) cross-Region inference profiles on Claude Sonnet 4.5 and
+  Claude Haiku 4.5, as the Lambda functions call them; `data/pricing.yaml` cites the sources.
+- A cache point only takes effect on a prompt prefix of at least the model's minimum: 1,024 tokens for Claude Sonnet
+  4.5, 4,096 for Claude Haiku 4.5. The 2,400-token system prompt is cached on the compare route (Sonnet) only; 95% of
+  compare requests read it from the cache and the rest write it. The ask route on Haiku pays the full input price.
 - The ask route moves to Claude Haiku 4.5, which passed the agreed bar on the golden set; compare stays on Claude
   Sonnet 4.5, where Haiku did not.
 - The guardrail charges one text unit per 1,000 characters at four characters per token, on the shopper's question
   and on the answer, for each policy type.
 - S3 Vectors query charges count the whole index as processed data on every query, which overstates them.
-- Invocation logs average 20 KB per request, all routes included.
+- Invocation logs carry metadata and token counts only (text data delivery off), about 2 KB per request, all routes
+  included.
 
 Two fixes add cost on purpose: guardrail coverage on the compare route with the PII filter, and invocation logging.
 They are the price of the security findings, and the net figure includes them.
@@ -381,6 +394,7 @@ They are the price of the security findings, and the net figure includes them.
 | `fixes/app/enrich_batch.py` | GA-10 |
 | `fixes/app/eval_gate.py` | GA-08 |
 | `fixes/pipeline/evaluate-stage.yaml` | GA-08 |
+| `fixes/pipeline/golden-set.json` | GA-08 |
 | `fixes/terraform/guardrail.tf` | GA-02, GA-03 |
 | `fixes/terraform/iam.tf` | GA-01, GA-10 |
 | `fixes/terraform/inference_profiles.tf` | GA-04, GA-11 |

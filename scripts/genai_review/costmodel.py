@@ -10,7 +10,7 @@ import math
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING
 
-from genai_review.checks import INTERACTIVE_ROUTES, cheapest_qualifying, model_key
+from genai_review.checks import INTERACTIVE_ROUTES, cacheable, cheapest_qualifying, model_key, unit_prices
 
 if TYPE_CHECKING:
     from genai_review.model import Review
@@ -22,7 +22,7 @@ ALL_GUARDRAIL_POLICIES = ("content_filter", "denied_topics", "sensitive_informat
 
 LEVERS = (
     ("model-right-size", "Right-size the ask route model"),
-    ("prompt-caching", "Cache the system prompt"),
+    ("prompt-caching", "Cache the system prompt where the model allows it"),
     ("batch-inference", "Batch inference for the enrich job"),
     ("vector-store", "Move the knowledge base to S3 Vectors"),
     ("guardrail-coverage", "Guardrail with PII filter on every route"),
@@ -75,7 +75,8 @@ def apply(review: Review, state: State, lever: str) -> State:
             models[route] = cheapest_qualifying(review, route)
         return replace(state, models=models)
     if lever == "prompt-caching":
-        return replace(state, cached=state.cached | frozenset(INTERACTIVE_ROUTES))
+        eligible = frozenset(r for r in INTERACTIVE_ROUTES if cacheable(review, r, state.models[r]))
+        return replace(state, cached=state.cached | eligible)
     if lever == "batch-inference":
         offline = frozenset(r for r, route in review.routes.items() if route["latency"] == "offline")
         return replace(state, batch=state.batch | offline)
@@ -97,11 +98,12 @@ def recommended(review: Review) -> State:
 
 def route_tokens(review: Review, state: State, route: str) -> float:
     spec = review.routes[route]
-    price = review.pricing["models"][state.models[route]]
+    price = unit_prices(review, state.models[route])
     n = spec["requests_per_month"]
     system = spec["system_prompt_tokens"]
     rest = spec["context_tokens"] + spec["user_tokens"]
-    if route in state.cached:
+    # A cache point on a prefix shorter than the model's minimum is ignored: the route pays the full input price.
+    if route in state.cached and cacheable(review, route, state.models[route]):
         hit = review.workload["assumptions"]["prompt_cache_hit_rate"]
         cost = n * system * (hit * price["cache_read"] + (1 - hit) * price["cache_write"])
         cost += n * rest * price["input"]

@@ -53,6 +53,23 @@ def test_caching_never_costs_more_at_the_modeled_hit_rate(loaded):
         assert costmodel.route_tokens(loaded, cached, route) < costmodel.route_tokens(loaded, state, route)
 
 
+def test_caching_skips_a_prompt_below_the_model_minimum(loaded):
+    """Claude Haiku 4.5 caches from 4,096 tokens; the ask route's 2,400-token prompt never reaches it."""
+    state = costmodel.apply(loaded, costmodel.as_found(loaded), "model-right-size")
+    cached = costmodel.apply(loaded, state, "prompt-caching")
+    assert cached.cached == frozenset({"compare"})
+    forced = costmodel.State(**{**state.__dict__, "cached": frozenset({"ask", "compare"})})
+    assert costmodel.route_tokens(loaded, forced, "ask") == pytest.approx(costmodel.route_tokens(loaded, state, "ask"))
+
+
+def test_geographic_premium_reaches_the_bill(loaded):
+    state = costmodel.as_found(loaded)
+    spec = loaded.routes["enrich"]
+    tokens_in = spec["system_prompt_tokens"] + spec["user_tokens"]
+    global_price = spec["requests_per_month"] * (tokens_in * 3.00 + spec["output_tokens"] * 15.00) / 1e6
+    assert costmodel.route_tokens(loaded, state, "enrich") == pytest.approx(global_price * 1.10)
+
+
 def test_model_switch_follows_the_evaluation(loaded, ref):
     state = costmodel.recommended(loaded)
     assert state.models["ask"] == "claude-haiku"
