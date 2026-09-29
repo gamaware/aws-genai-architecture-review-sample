@@ -88,6 +88,8 @@ The client accepts the deliverable when:
 
 ## Architecture
 
+![Animated flow: exports, Lens checks, ranked findings, fixes, cost model](docs/diagrams/architecture-animated.svg)
+
 ```mermaid
 flowchart LR
   shopper[Shoppers: web, app, kiosk] --> cf[CloudFront + WAF]
