@@ -86,14 +86,14 @@ def pii_in_logs(review: Review) -> Result:
     groups = review.snapshot.resources_of("aws_cloudwatch_log_group")
     unencrypted = sum(1 for g in groups.values() if not g["values"].get("kms_key_id"))
     no_expiry = sum(1 for g in groups.values() if not g["values"].get("retention_in_days"))
-    if hits or no_expiry:
+    if hits or no_expiry or unencrypted:
         found = " and ".join(f"{count} {label}{'s' if count > 1 else ''}" for label, count in sorted(hits.items()))
         return Result(
             False,
             f"{len(review.snapshot.log_events)} sampled log events hold {found or 'no PII'}; "
             f"{unencrypted} of {len(groups)} log groups have no KMS key and {no_expiry} never expire",
         )
-    return Result(True, "no PII in the sampled prompts and every log group expires")
+    return Result(True, "no PII in the sampled prompts; every log group has a KMS key and expires")
 
 
 @check("invocation-logging")

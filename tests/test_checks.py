@@ -251,3 +251,12 @@ def test_quality_bar_uses_overall_and_weakest_category(loaded):
     assert not qualifies(rates["ask"]["nova-lite"])  # overall under 90% and one category at 80%
     assert not qualifies(rates["compare"]["claude-haiku"])
     assert qualifies(rates["compare"]["claude-sonnet"])
+
+
+def test_log_groups_without_a_kms_key_fail_the_pii_check(review):
+    fix_pii(review)
+    group = next(iter(review.snapshot.resources_of("aws_cloudwatch_log_group").values()))
+    group["values"].pop("kms_key_id")
+    result = REGISTRY["pii-in-logs"](review)
+    assert not result.passed
+    assert "1 of" in result.observed
