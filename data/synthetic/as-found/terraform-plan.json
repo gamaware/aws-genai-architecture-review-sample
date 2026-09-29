@@ -1,0 +1,172 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.14.5",
+  "description": "Fictional snapshot: `terraform show -json` of the product-assistant stack as found, trimmed to the attributes the review reads.",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_cloudfront_distribution.assistant",
+          "type": "aws_cloudfront_distribution",
+          "name": "assistant",
+          "values": {
+            "enabled": true,
+            "web_acl_id": "arn:aws:wafv2:us-east-1:111122223333:global/webacl/storefront/a1b2c3d4-5678-90ab-cdef-EXAMPLE11111",
+            "origin": [{"domain_name": "abc123.execute-api.us-east-1.amazonaws.com", "origin_id": "assistant-api"}],
+            "tags": {"app": "product-assistant"}
+          }
+        },
+        {
+          "address": "aws_api_gateway_rest_api.assistant",
+          "type": "aws_api_gateway_rest_api",
+          "name": "assistant",
+          "values": {"name": "product-assistant", "endpoint_configuration": [{"types": ["REGIONAL"]}]}
+        },
+        {
+          "address": "aws_api_gateway_stage.prod",
+          "type": "aws_api_gateway_stage",
+          "name": "prod",
+          "values": {"stage_name": "prod", "xray_tracing_enabled": false, "access_log_settings": []}
+        },
+        {
+          "address": "aws_api_gateway_method_settings.all",
+          "type": "aws_api_gateway_method_settings",
+          "name": "all",
+          "values": {
+            "stage_name": "prod",
+            "method_path": "*/*",
+            "settings": [{"metrics_enabled": true, "throttling_burst_limit": -1, "throttling_rate_limit": -1}]
+          }
+        },
+        {
+          "address": "aws_cognito_user_pool.shoppers",
+          "type": "aws_cognito_user_pool",
+          "name": "shoppers",
+          "values": {"name": "harbor-goods-shoppers", "mfa_configuration": "OPTIONAL"}
+        },
+        {
+          "address": "aws_lambda_function.ask",
+          "type": "aws_lambda_function",
+          "name": "ask",
+          "values": {
+            "function_name": "product-assistant-ask",
+            "runtime": "python3.13",
+            "timeout": 30,
+            "role": "arn:aws:iam::111122223333:role/product-assistant-lambda",
+            "environment": [
+              {
+                "variables": {
+                  "MODEL_ID": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+                  "GUARDRAIL_ID": "gr-ask-example",
+                  "GUARDRAIL_POLICIES": "content_filter,denied_topics",
+                  "PROMPT_CACHING": "false",
+                  "LOG_PROMPTS": "true",
+                  "MAX_TOKENS": "1024"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "address": "aws_lambda_function.compare",
+          "type": "aws_lambda_function",
+          "name": "compare",
+          "values": {
+            "function_name": "product-assistant-compare",
+            "runtime": "python3.13",
+            "timeout": 30,
+            "role": "arn:aws:iam::111122223333:role/product-assistant-lambda",
+            "environment": [
+              {
+                "variables": {
+                  "MODEL_ID": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+                  "GUARDRAIL_ID": "",
+                  "GUARDRAIL_POLICIES": "",
+                  "PROMPT_CACHING": "false",
+                  "LOG_PROMPTS": "true",
+                  "MAX_TOKENS": "2048"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "address": "aws_lambda_function.enrich",
+          "type": "aws_lambda_function",
+          "name": "enrich",
+          "values": {
+            "function_name": "product-assistant-enrich",
+            "runtime": "python3.13",
+            "timeout": 900,
+            "role": "arn:aws:iam::111122223333:role/product-assistant-lambda",
+            "environment": [
+              {
+                "variables": {
+                  "MODEL_ID": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+                  "INFERENCE_MODE": "on_demand",
+                  "LOG_PROMPTS": "false",
+                  "MAX_TOKENS": "1024"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "address": "aws_cloudwatch_log_group.ask",
+          "type": "aws_cloudwatch_log_group",
+          "name": "ask",
+          "values": {"name": "/aws/lambda/product-assistant-ask", "retention_in_days": 0, "kms_key_id": ""}
+        },
+        {
+          "address": "aws_cloudwatch_log_group.compare",
+          "type": "aws_cloudwatch_log_group",
+          "name": "compare",
+          "values": {"name": "/aws/lambda/product-assistant-compare", "retention_in_days": 0, "kms_key_id": ""}
+        },
+        {
+          "address": "aws_cloudwatch_log_group.enrich",
+          "type": "aws_cloudwatch_log_group",
+          "name": "enrich",
+          "values": {"name": "/aws/lambda/product-assistant-enrich", "retention_in_days": 30, "kms_key_id": ""}
+        },
+        {
+          "address": "aws_bedrock_guardrail.ask",
+          "type": "aws_bedrock_guardrail",
+          "name": "ask",
+          "values": {
+            "name": "product-assistant-ask",
+            "content_policy_config": [{"filters_config": [{"type": "PROMPT_ATTACK", "input_strength": "HIGH", "output_strength": "NONE"}]}],
+            "topic_policy_config": [{"topics_config": [{"name": "competitor-pricing", "type": "DENY"}]}],
+            "sensitive_information_policy_config": []
+          }
+        },
+        {
+          "address": "aws_bedrockagent_knowledge_base.catalog",
+          "type": "aws_bedrockagent_knowledge_base",
+          "name": "catalog",
+          "values": {
+            "name": "product-catalog",
+            "storage_configuration": [{"type": "OPENSEARCH_SERVERLESS"}]
+          }
+        },
+        {
+          "address": "aws_opensearchserverless_collection.catalog",
+          "type": "aws_opensearchserverless_collection",
+          "name": "catalog",
+          "values": {"name": "product-catalog", "type": "VECTORSEARCH", "standby_replicas": "ENABLED"}
+        },
+        {
+          "address": "aws_dynamodb_table.chat_history",
+          "type": "aws_dynamodb_table",
+          "name": "chat_history",
+          "values": {
+            "name": "product-assistant-chat-history",
+            "billing_mode": "PAY_PER_REQUEST",
+            "ttl": [{"attribute_name": "expires_at", "enabled": true}],
+            "server_side_encryption": [{"enabled": true}]
+          }
+        }
+      ]
+    }
+  }
+}

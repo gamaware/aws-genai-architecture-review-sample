@@ -1,0 +1,24 @@
+{
+  "RoleName": "product-assistant-lambda",
+  "Arn": "arn:aws:iam::111122223333:role/product-assistant-lambda",
+  "AttachedManagedPolicies": [
+    {"PolicyName": "AWSLambdaBasicExecutionRole", "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"}
+  ],
+  "InlinePolicies": [
+    {
+      "PolicyName": "assistant-runtime",
+      "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {"Sid": "Bedrock", "Effect": "Allow", "Action": "bedrock:*", "Resource": "*"},
+          {
+            "Sid": "ChatHistory",
+            "Effect": "Allow",
+            "Action": ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query"],
+            "Resource": "arn:aws:dynamodb:us-east-1:111122223333:table/product-assistant-chat-history"
+          }
+        ]
+      }
+    }
+  ]
+}

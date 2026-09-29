@@ -1,0 +1,60 @@
+{
+  "after": {
+    "ask route tokens": 3139.2,
+    "compare route tokens": 2568.6,
+    "embeddings": 2.06,
+    "enrich job tokens": 360.0,
+    "guardrails": 900.0,
+    "invocation logging": 11.77,
+    "vector store": 11.14
+  },
+  "after_total": 6992.77,
+  "before": {
+    "ask route tokens": 14877.0,
+    "compare route tokens": 3478.5,
+    "embeddings": 2.06,
+    "enrich job tokens": 720.0,
+    "guardrails": 540.0,
+    "invocation logging": 0.0,
+    "vector store": 700.8
+  },
+  "before_total": 20318.36,
+  "cur_by_period": {
+    "month-1": 15217.79,
+    "month-2": 17571.9,
+    "month-3": 20381.36
+  },
+  "levers": [
+    {
+      "change": -9918.0,
+      "label": "Right-size the ask route model",
+      "lever": "model-right-size"
+    },
+    {
+      "change": -2729.7,
+      "label": "Cache the system prompt",
+      "lever": "prompt-caching"
+    },
+    {
+      "change": -360.0,
+      "label": "Batch inference for the enrich job",
+      "lever": "batch-inference"
+    },
+    {
+      "change": -689.65,
+      "label": "Move the knowledge base to S3 Vectors",
+      "lever": "vector-store"
+    },
+    {
+      "change": 360.0,
+      "label": "Guardrail with PII filter on every route",
+      "lever": "guardrail-coverage"
+    },
+    {
+      "change": 11.77,
+      "label": "Model invocation logging",
+      "lever": "invocation-logging"
+    }
+  ],
+  "reconciliation_gap": 0.0031
+}

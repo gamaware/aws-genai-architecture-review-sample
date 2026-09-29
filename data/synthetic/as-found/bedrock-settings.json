@@ -1,0 +1,13 @@
+{
+  "description": "Fictional read-only exports from the production account, one key per command.",
+  "get-model-invocation-logging-configuration": {},
+  "list-inference-profiles --type-equals APPLICATION": {"inferenceProfileSummaries": []},
+  "list-guardrails": {
+    "guardrails": [
+      {"id": "gr-ask-example", "name": "product-assistant-ask", "status": "READY", "version": "DRAFT"}
+    ]
+  },
+  "opensearchserverless get-account-settings": {
+    "capacityLimits": {"maxIndexingCapacityInOCU": 4, "maxSearchCapacityInOCU": 4}
+  }
+}

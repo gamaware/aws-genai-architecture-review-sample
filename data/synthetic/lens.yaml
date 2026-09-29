@@ -1,0 +1,100 @@
+# Generative AI Lens best practices in scope. IDs and titles as AWS publishes them in the lens.
+# A best practice with `checks` takes its status from those checks: met when all pass, not met otherwise.
+# A best practice without checks was confirmed by interview or review and records its status and evidence here.
+pillars:
+  - key: operational-excellence
+    name: Operational excellence
+    best_practices:
+      - id: GENOPS01-BP01
+        title: Periodically evaluate functional performance
+        question: "GENOPS01: How do you achieve and verify consistent model output quality?"
+        checks: [eval-in-pipeline]
+      - id: GENOPS01-BP02
+        title: Collect and monitor user feedback
+        question: "GENOPS01: How do you achieve and verify consistent model output quality?"
+        status: met
+        evidence: [EV-08]
+        note: The chat widget stores a thumbs-up or thumbs-down per answer, and the team reviews the weekly totals.
+      - id: GENOPS02-BP02
+        title: Monitor foundation model metrics
+        question: "GENOPS02: How do you monitor and manage the operational health of your applications?"
+        checks: [application-inference-profiles]
+      - id: GENOPS02-BP03
+        title: Implement solutions to mitigate the risk of system overload
+        question: "GENOPS02: How do you monitor and manage the operational health of your applications?"
+        checks: [api-throttling]
+      - id: GENOPS03-BP01
+        title: Implement prompt template management
+        question: "GENOPS03: How do you maintain traceability for your models, prompts, and assets?"
+        status: met
+        evidence: [EV-08]
+        note: System prompts live in the application repository and change only through reviewed pull requests.
+  - key: security
+    name: Security
+    best_practices:
+      - id: GENSEC01-BP01
+        title: Grant least privilege access to foundation model endpoints
+        question: "GENSEC01: How do you manage access to generative AI endpoints?"
+        checks: [scoped-bedrock-access]
+      - id: GENSEC02-BP01
+        title: Implement guardrails to mitigate harmful or incorrect model responses
+        question: "GENSEC02: How do you stop generative AI applications from generating harmful, biased, or factually incorrect responses?"
+        checks: [guardrail-every-route]
+      - id: GENSEC03-BP01
+        title: Implement control plane and data access monitoring to generative AI services and foundation models
+        question: "GENSEC03: How do you monitor and audit events associated with your generative AI workloads?"
+        checks: [invocation-logging]
+      - id: GENSEC04-BP02
+        title: Sanitize and validate user inputs to foundation models
+        question: "GENSEC04: How do you secure system and user prompts?"
+        checks: [pii-in-logs]
+  - key: reliability
+    name: Reliability
+    best_practices:
+      - id: GENREL01-BP01
+        title: Scale and balance foundation model throughput as a function of utilization
+        question: "GENREL01: How do you determine throughput quotas (or needs) for foundation models?"
+        checks: [cross-region-inference]
+  - key: performance-efficiency
+    name: Performance efficiency
+    best_practices:
+      - id: GENPERF01-BP01
+        title: Define a ground truth data set of prompts and responses
+        question: "GENPERF01: How do you capture and improve the performance of your generative AI models in production?"
+        status: met
+        evidence: [EV-05, EV-08]
+        note: >-
+          The review and the product team agreed a golden set of 220 questions with reference answers; the client owns
+          and extends it.
+  - key: cost-optimization
+    name: Cost optimization
+    best_practices:
+      - id: GENCOST01-BP01
+        title: Right-size model selection to optimize inference costs
+        question: "GENCOST01: How do you select the appropriate model to optimize costs?"
+        checks: [right-sized-model]
+      - id: GENCOST02-BP01
+        title: Balance cost and performance when selecting inference paradigms
+        question: "GENCOST02: How do you select a cost-effective pricing model (for example, provisioned, on-demand, hosted, or batch)?"
+        checks: [batch-for-offline-jobs]
+      - id: GENCOST02-BP02
+        title: Optimize resource consumption to minimize hosting costs
+        question: "GENCOST02: How do you select a cost-effective pricing model (for example, provisioned, on-demand, hosted, or batch)?"
+        checks: [vector-store-sizing]
+      - id: GENCOST03-BP02
+        title: Control model response length
+        question: "GENCOST03: How do you engineer prompts to optimize cost?"
+        checks: [max-tokens-set]
+      - id: GENCOST03-BP03
+        title: Implement prompt caching to reduce token costs
+        question: "GENCOST03: How do you engineer prompts to optimize cost?"
+        checks: [prompt-caching]
+  - key: sustainability
+    name: Sustainability
+    best_practices:
+      - id: GENSUS01-BP01
+        title: Implement auto scaling and serverless architectures to optimize resource utilization
+        question: "GENSUS01: How do you minimize the computational resources needed for training, customizing, and hosting generative AI workloads?"
+        status: met
+        evidence: [EV-01]
+        note: Inference runs on Lambda and on-demand Bedrock, and chat history on DynamoDB on-demand capacity.

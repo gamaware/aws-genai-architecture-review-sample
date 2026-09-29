@@ -1,0 +1,11 @@
+{
+  "color": "#2B2F77",
+  "heading": ["GenAI", "architecture", "and cost review"],
+  "subtitle": "Generative AI Lens · ranked risks · fixes as code",
+  "steps": [
+    {"label": "Exports & golden set", "icon": "icons/Arch_Amazon-Bedrock_64.svg"},
+    {"label": "Ranked findings", "icon": "icons/Arch_AWS-Well-Architected-Tool_64.svg"},
+    {"label": "Fixes & cost model", "icon": "icons/Arch_AWS-Cost-Explorer_64.svg"}
+  ],
+  "illustration": "social-preview-illustration.svg"
+}
