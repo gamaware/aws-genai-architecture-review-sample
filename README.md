@@ -195,16 +195,6 @@ Workflows start from `permissions: {}`, pin actions to full commit SHAs, and nev
   the client's pipeline, staging first, and the client imports the Lambda log groups and the ask and compare API
   methods before the first apply.
 
-## Built on
-
-- [AWS Well-Architected Generative AI Lens](https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html):
-  the review method and best-practice IDs (cited, not copied).
-- [Guidance for a multi-provider generative AI gateway on AWS](https://github.com/aws-solutions-library-samples/guidance-for-multi-provider-generative-ai-gateway-on-aws)
-  (MIT-0) and [Generative AI Use Cases](https://github.com/aws-samples/generative-ai-use-cases) (MIT-0): reference
-  architectures for quotas, cost attribution and the shape of the reviewed application. This repository copies no
-  code from them; the as-found snapshot is original.
-- [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/): unit prices in the cost model.
-
 ## Related work
 
 Part of the [AWS DevOps portfolio](https://github.com/gamaware/aws-devops-portfolio); it backs the "GenAI
@@ -213,6 +203,16 @@ architecture and cost review" service:
 the one Alex uses in audits for ITESO and freelance clients in Guadalajara. Contribution, conduct and support
 guidelines come from [gamaware/.github](https://github.com/gamaware/.github); see also [SECURITY.md](SECURITY.md) and
 [CHANGELOG.md](CHANGELOG.md).
+
+### Built on
+
+- [AWS Well-Architected Generative AI Lens](https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html):
+  the review method and best-practice IDs (cited, not copied).
+- [Guidance for a multi-provider generative AI gateway on AWS](https://github.com/aws-solutions-library-samples/guidance-for-multi-provider-generative-ai-gateway-on-aws)
+  (MIT-0) and [Generative AI Use Cases](https://github.com/aws-samples/generative-ai-use-cases) (MIT-0): reference
+  architectures for quotas, cost attribution and the shape of the reviewed application. This repository copies no
+  code from them; the as-found snapshot is original.
+- [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/): unit prices in the cost model.
 
 ## License
 
