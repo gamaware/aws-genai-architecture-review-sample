@@ -1,0 +1,70 @@
+# Fictional workload under review. Harbor Goods is a fictional mid-size retailer; account IDs are AWS documentation
+# examples. Traffic figures are monthly averages over the last full billing month in the CUR export.
+client: Harbor Goods
+workload:
+  name: product-assistant
+  description: >-
+    Customer-facing product Q&A assistant on the storefront. Shoppers ask about products, compare items, and read
+    answers grounded in the product catalog and policy pages.
+  owner: Head of digital product
+  accounts:
+    production: "111122223333"
+    staging: "444455556666"
+    shared_services: "123456789012"
+  region: us-east-1
+
+scope:
+  lens: AWS Well-Architected Generative AI Lens
+  in_scope:
+    - API layer (Amazon CloudFront, Amazon API Gateway REST API, Amazon Cognito)
+    - Three AWS Lambda functions (ask, compare, enrich) and their IAM role
+    - Amazon Bedrock model access, guardrails and knowledge base
+    - Knowledge base vector store (Amazon OpenSearch Serverless) and chat history (Amazon DynamoDB)
+    - Application logs, CI pipeline and the Bedrock cost and usage line items
+  out_of_scope:
+    - Storefront web tier and orders database (reviewed in other engagements)
+    - Penetration testing and red-team exercises
+    - Model fine-tuning (the workload uses base models only)
+  access: Read-only exports reviewed offline; no changes to the client's accounts
+
+# Monthly traffic per route. Token counts are averages per request taken from the application's usage metrics.
+routes:
+  ask:
+    description: Product questions from the storefront chat widget
+    requests_per_month: 900000
+    system_prompt_tokens: 2400
+    context_tokens: 1800
+    user_tokens: 60
+    output_tokens: 250
+    latency: interactive
+  compare:
+    description: Side-by-side product comparison
+    requests_per_month: 150000
+    system_prompt_tokens: 2400
+    context_tokens: 3000
+    user_tokens: 80
+    output_tokens: 450
+    latency: interactive
+  enrich:
+    description: Nightly job that rewrites catalog descriptions and attributes for search
+    requests_per_month: 60000
+    system_prompt_tokens: 900
+    context_tokens: 0
+    user_tokens: 1100
+    output_tokens: 400
+    latency: offline
+
+knowledge_base:
+  documents: 18400
+  vector_data_gb: 2.0
+  embedding_tokens_per_month: 40000000
+  query_embedding_tokens: 60
+
+# Assumptions used by the cost model for the recommended state. Each one is stated in the report.
+assumptions:
+  prompt_cache_hit_rate: 0.95
+  chars_per_token: 4
+  guardrail_text_unit_chars: 1000
+  # Invocation logs carry metadata and token counts only (text data delivery off), about 2 KB per record.
+  invocation_log_kb_per_request: 2
+  hours_per_month: 730

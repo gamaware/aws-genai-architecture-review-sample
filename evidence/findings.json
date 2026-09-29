@@ -1,0 +1,254 @@
+[
+  {
+    "best_practice": "GENSEC01-BP01",
+    "check": "scoped-bedrock-access",
+    "depends_on": [],
+    "effort": "S",
+    "evidence": [
+      "EV-02"
+    ],
+    "fix": [
+      "fixes/terraform/iam.tf"
+    ],
+    "key": "GA-01",
+    "monthly_change_usd": 0.0,
+    "observed": "assistant-runtime/Bedrock allows `bedrock:*` on `*`",
+    "owner": "Platform team",
+    "phase": "Weeks 1-2",
+    "pillar": "Security",
+    "recommendation": "Replace the statement with bedrock:InvokeModel and bedrock:InvokeModelWithResponseStream on the three application inference profiles and their foundation models, bedrock:ApplyGuardrail on the guardrail, bedrock:Retrieve on the knowledge base, and the batch inference actions for the enrich job only.",
+    "risk": "high",
+    "title": "The Lambda role allows `bedrock:*` on every resource"
+  },
+  {
+    "best_practice": "GENSEC04-BP02",
+    "check": "pii-in-logs",
+    "depends_on": [],
+    "effort": "M",
+    "evidence": [
+      "EV-01",
+      "EV-04"
+    ],
+    "fix": [
+      "fixes/app/assistant.py",
+      "fixes/terraform/logging.tf",
+      "fixes/terraform/guardrail.tf"
+    ],
+    "key": "GA-02",
+    "monthly_change_usd": 0.0,
+    "observed": "8 sampled log events hold 1 loyalty card number and 2 phone numbers; 3 of 3 log groups have no KMS key and 2 never expire",
+    "owner": "Product engineering",
+    "phase": "Weeks 1-2",
+    "pillar": "Security",
+    "recommendation": "Stop logging raw prompts (log token counts and request IDs), redact PII in the handler before any log call, anonymize PII in the guardrail, and encrypt the log groups with a customer managed KMS key and a retention period.",
+    "risk": "high",
+    "title": "Application logs keep customer prompts with personal data, unencrypted and forever"
+  },
+  {
+    "best_practice": "GENSEC02-BP01",
+    "check": "guardrail-every-route",
+    "depends_on": [],
+    "effort": "S",
+    "evidence": [
+      "EV-01",
+      "EV-03",
+      "EV-04"
+    ],
+    "fix": [
+      "fixes/terraform/guardrail.tf",
+      "fixes/app/assistant.py"
+    ],
+    "key": "GA-03",
+    "monthly_change_usd": 360.0,
+    "observed": "GUARDRAIL_ID is empty on: compare",
+    "owner": "Platform team",
+    "phase": "Weeks 1-2",
+    "pillar": "Security",
+    "recommendation": "Attach one versioned guardrail to every route: prompt-attack and content filters, the denied competitor-pricing topic, and PII anonymization on input and output. Call it through guardrailConfig on each Converse request.",
+    "risk": "high",
+    "title": "The compare route calls the model with no guardrail"
+  },
+  {
+    "best_practice": "GENCOST01-BP01",
+    "check": "right-sized-model",
+    "depends_on": [
+      "GA-08",
+      "GA-11"
+    ],
+    "effort": "S",
+    "evidence": [
+      "EV-05",
+      "EV-06"
+    ],
+    "fix": [
+      "fixes/terraform/inference_profiles.tf"
+    ],
+    "key": "GA-04",
+    "monthly_change_usd": -10909.8,
+    "observed": "ask uses claude-sonnet; claude-haiku passes 93.6% overall, 90% in its weakest category",
+    "owner": "Product engineering",
+    "phase": "Weeks 3-6",
+    "pillar": "Cost optimization",
+    "recommendation": "Move the ask route to Claude Haiku through its application inference profile once the evaluation stage is in the pipeline. Keep Claude Sonnet on compare, where Haiku falls below the bar. On Claude Haiku the ask route's 2,400-token system prompt is below the 4,096-token cache minimum, so that route gets no caching saving.",
+    "risk": "medium",
+    "title": "The ask route uses Claude Sonnet where Claude Haiku meets the quality bar"
+  },
+  {
+    "best_practice": "GENCOST03-BP03",
+    "check": "prompt-caching",
+    "depends_on": [],
+    "effort": "S",
+    "evidence": [
+      "EV-01",
+      "EV-08"
+    ],
+    "fix": [
+      "fixes/app/assistant.py"
+    ],
+    "key": "GA-05",
+    "monthly_change_usd": -1000.89,
+    "observed": "PROMPT_CACHING is off on ask, compare (system prompt tokens: ask 2,400, compare 2,400)",
+    "owner": "Product engineering",
+    "phase": "Weeks 3-6",
+    "pillar": "Cost optimization",
+    "recommendation": "Put a cache point after the system prompt on each route whose prompt reaches the model's minimum cacheable length: 1,024 tokens for Claude Sonnet 4.5, 4,096 for Claude Haiku 4.5. That is the compare route; once the ask route moves to Claude Haiku its 2,400-token prompt is below the minimum, so it gets no cache point.",
+    "risk": "medium",
+    "title": "Every interactive request pays full price for the 2,400-token system prompt"
+  },
+  {
+    "best_practice": "GENCOST02-BP02",
+    "check": "vector-store-sizing",
+    "depends_on": [
+      "GA-08"
+    ],
+    "effort": "M",
+    "evidence": [
+      "EV-01",
+      "EV-03",
+      "EV-06"
+    ],
+    "fix": [
+      "fixes/terraform/vectors.tf"
+    ],
+    "key": "GA-06",
+    "monthly_change_usd": -689.65,
+    "observed": "4 OCUs on average for 2 GB of vector data",
+    "owner": "Platform team",
+    "phase": "Weeks 3-6",
+    "pillar": "Cost optimization",
+    "recommendation": "Move the knowledge base to Amazon S3 Vectors, re-ingest, compare retrieval on the golden set, then delete the collection.",
+    "risk": "medium",
+    "title": "The knowledge base keeps 4 OpenSearch Serverless OCUs running for 2 GB of vectors"
+  },
+  {
+    "best_practice": "GENOPS02-BP03",
+    "check": "api-throttling",
+    "depends_on": [],
+    "effort": "M",
+    "evidence": [
+      "EV-01"
+    ],
+    "fix": [
+      "fixes/terraform/throttling.tf"
+    ],
+    "key": "GA-07",
+    "monthly_change_usd": 0.0,
+    "observed": "stage throttling unset (rate limit -1); 0 usage plans; 2 of 2 methods accept requests without an API key",
+    "owner": "Platform team",
+    "phase": "Weeks 3-6",
+    "pillar": "Operational excellence",
+    "recommendation": "Set stage-level throttling and one usage plan per channel (web, mobile app, store kiosk) with rate, burst and daily quota, require an API key on the ask and compare methods (a usage plan only applies to methods that require one), and alarm when the 4XX rate climbs.",
+    "risk": "medium",
+    "title": "The API has no throttling and no per-channel quota"
+  },
+  {
+    "best_practice": "GENOPS01-BP01",
+    "check": "eval-in-pipeline",
+    "depends_on": [],
+    "effort": "M",
+    "evidence": [
+      "EV-05",
+      "EV-07"
+    ],
+    "fix": [
+      "fixes/pipeline/evaluate-stage.yaml",
+      "fixes/pipeline/golden-set.json",
+      "fixes/app/eval_gate.py"
+    ],
+    "key": "GA-08",
+    "monthly_change_usd": 0.0,
+    "observed": "pipeline stages: lint, unit-test, package, deploy-staging, deploy-production",
+    "owner": "Product engineering",
+    "phase": "Weeks 3-6",
+    "pillar": "Operational excellence",
+    "recommendation": "Run the golden set in the pipeline between deploy-staging and deploy-production, and block the release when the pass rate falls under 90% overall or 85% in any category, or when the run misses a route, the shipping model, a category or part of its questions.",
+    "risk": "medium",
+    "title": "No evaluation runs before a prompt or model change reaches production"
+  },
+  {
+    "best_practice": "GENSEC03-BP01",
+    "check": "invocation-logging",
+    "depends_on": [],
+    "effort": "S",
+    "evidence": [
+      "EV-03"
+    ],
+    "fix": [
+      "fixes/terraform/logging.tf"
+    ],
+    "key": "GA-09",
+    "monthly_change_usd": 1.18,
+    "observed": "get-model-invocation-logging-configuration returns no loggingConfig",
+    "owner": "Platform team",
+    "phase": "Weeks 3-6",
+    "pillar": "Security",
+    "recommendation": "Enable Bedrock model invocation logging to a KMS-encrypted CloudWatch Logs group with one-year retention, with text data delivery off so each record holds the request metadata and token counts only. Bedrock logs the original input even when the guardrail anonymizes PII, so text delivery would copy raw prompts into the logs.",
+    "risk": "medium",
+    "title": "Model invocation logging is off"
+  },
+  {
+    "best_practice": "GENCOST02-BP01",
+    "check": "batch-for-offline-jobs",
+    "depends_on": [],
+    "effort": "M",
+    "evidence": [
+      "EV-01",
+      "EV-08"
+    ],
+    "fix": [
+      "fixes/app/enrich_batch.py",
+      "fixes/terraform/iam.tf"
+    ],
+    "key": "GA-10",
+    "monthly_change_usd": -396.0,
+    "observed": "offline routes on on-demand inference: enrich",
+    "owner": "Product engineering",
+    "phase": "Weeks 7-10",
+    "pillar": "Cost optimization",
+    "recommendation": "Submit the nightly descriptions as one Bedrock batch inference job from S3 and read the results back in the morning run.",
+    "risk": "low",
+    "title": "The nightly enrich job uses on-demand inference"
+  },
+  {
+    "best_practice": "GENOPS02-BP02",
+    "check": "application-inference-profiles",
+    "depends_on": [],
+    "effort": "S",
+    "evidence": [
+      "EV-03",
+      "EV-06"
+    ],
+    "fix": [
+      "fixes/terraform/inference_profiles.tf"
+    ],
+    "key": "GA-11",
+    "monthly_change_usd": 0.0,
+    "observed": "0 application inference profiles for 3 routes",
+    "owner": "Platform team",
+    "phase": "Weeks 3-6",
+    "pillar": "Operational excellence",
+    "recommendation": "Create one application inference profile per route, tagged with app, route and cost center, and invoke the model through its profile ARN.",
+    "risk": "low",
+    "title": "The bill cannot show model usage by route or cost center"
+  }
+]

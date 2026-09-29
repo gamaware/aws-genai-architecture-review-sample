@@ -1,0 +1,12 @@
+# Used by `make checkov`. Skips live next to the resource with their reason (#checkov:skip=...), never here.
+# data/synthetic/as-found is the client's state as found, reviewed by the scripted checks; it is not scanned as ours.
+directory:
+  - fixes/terraform
+  - .github/workflows
+framework:
+  - terraform
+  - github_actions
+skip-path:
+  - \.terraform
+quiet: true
+compact: true

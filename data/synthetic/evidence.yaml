@@ -1,0 +1,34 @@
+# Evidence register. Every finding and every best-practice status cites at least one of these IDs.
+evidence:
+  - id: EV-01
+    title: Terraform state export of the product-assistant stack
+    kind: read-only export
+    path: as-found/terraform-plan.json
+  - id: EV-02
+    title: IAM role and inline policies of the Lambda functions
+    kind: read-only export
+    path: as-found/iam-lambda-role.json
+  - id: EV-03
+    title: Bedrock account settings (invocation logging, inference profiles, guardrails, OCU limits)
+    kind: read-only export
+    path: as-found/bedrock-settings.json
+  - id: EV-04
+    title: Sample of application log events from the ask and compare functions
+    kind: read-only export
+    path: as-found/app-log-sample.jsonl
+  - id: EV-05
+    title: Offline evaluation of three models on the golden question set
+    kind: review test
+    path: as-found/eval-results.csv
+  - id: EV-06
+    title: Cost and usage line items for Bedrock and OpenSearch Serverless, last three months
+    kind: read-only export
+    path: as-found/cur-genai.csv
+  - id: EV-07
+    title: Deployment pipeline stages
+    kind: read-only export
+    path: as-found/ci-pipeline.yaml
+  - id: EV-08
+    title: Interview with the product and platform team (prompts, feedback, scaling, traffic)
+    kind: interview
+    path: workload.yaml

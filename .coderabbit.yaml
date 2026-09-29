@@ -1,0 +1,36 @@
+language: en-US
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "data/**"
+      instructions: >-
+        Fictional review inputs for Harbor Goods. Best-practice IDs and titles in lens.yaml must match the AWS
+        Well-Architected Generative AI Lens exactly. Unit prices in pricing.yaml need a source page. Only AWS
+        documentation example account IDs (111122223333, 444455556666, 123456789012). Every data change needs
+        `make evidence` so evidence/ and the report stay in step.
+    - path: "scripts/**"
+      instructions: >-
+        Check logic, ranking and the cost model are documented in docs/methodology.md and the ADRs. Flag any rule
+        change that is not reflected there or not covered by a test in tests/.
+    - path: "fixes/terraform/**"
+      instructions: >-
+        Scoped IAM (no wildcard actions or resources outside KMS key policies), KMS encryption, log retention of at
+        least one year, and a terraform test assertion for every control a finding relies on.
+    - path: "fixes/app/**"
+      instructions: >-
+        No prompt or answer text in logs, guardrail on every Converse call, the Bedrock client injected and stubbed in
+        tests, no AWS calls at import time.
+    - path: "report/REPORT.md"
+      instructions: >-
+        Numbers in prose must match evidence/. Generated blocks sit between BEGIN/END GENERATED markers and must not be
+        edited by hand. Never attribute findings to a real organization.
+    - path: ".github/workflows/**"
+      instructions: >-
+        permissions: {} at the top and per-job grants, actions pinned to full SHAs with a version comment,
+        no pull_request_target, event data passed through env, no cloud credentials or id-token.
+    - path: "**/*.md"
+      instructions: >-
+        Line length 120 (tables exempt), English, dateless, AWS documentation example IDs only, no marketing
+        adjectives.

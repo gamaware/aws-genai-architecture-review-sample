@@ -1,0 +1,10 @@
+# Stage to insert between deploy-staging and deploy-production in the product-assistant pipeline.
+# It runs the golden set against staging with the models and prompts about to ship, then applies the release gate,
+# which also blocks a partial run: every route, shipping model and category in golden-set.json must be present.
+- name: evaluate-golden-set
+  after: deploy-staging
+  before: deploy-production
+  commands:
+    - python -m golden_set.run --endpoint staging --routes ask,compare --out eval-results.csv
+    - python fixes/app/eval_gate.py eval-results.csv --expected fixes/pipeline/golden-set.json --min-overall 0.90 --min-category 0.85
+  artifacts: [eval-results.csv]

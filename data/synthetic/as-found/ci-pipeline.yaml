@@ -1,0 +1,15 @@
+# Fictional export of the product-assistant deployment pipeline (stage names and commands only).
+pipeline: product-assistant-deploy
+trigger: push to main
+stages:
+  - name: lint
+    commands: [ruff check ., ruff format --check .]
+  - name: unit-test
+    commands: [pytest tests/unit]
+  - name: package
+    commands: [sam build]
+  - name: deploy-staging
+    commands: [terraform apply -auto-approve -var-file=staging.tfvars]
+  - name: deploy-production
+    commands: [terraform apply -auto-approve -var-file=production.tfvars]
+    approval: manual

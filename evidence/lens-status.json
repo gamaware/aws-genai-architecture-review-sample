@@ -1,0 +1,183 @@
+[
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-05",
+      "EV-07"
+    ],
+    "id": "GENOPS01-BP01",
+    "pillar": "Operational excellence",
+    "status": "not_met",
+    "title": "Periodically evaluate functional performance"
+  },
+  {
+    "basis": "interview and review",
+    "evidence": [
+      "EV-08"
+    ],
+    "id": "GENOPS01-BP02",
+    "pillar": "Operational excellence",
+    "status": "met",
+    "title": "Collect and monitor user feedback"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-03",
+      "EV-06"
+    ],
+    "id": "GENOPS02-BP02",
+    "pillar": "Operational excellence",
+    "status": "not_met",
+    "title": "Monitor foundation model metrics"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-01"
+    ],
+    "id": "GENOPS02-BP03",
+    "pillar": "Operational excellence",
+    "status": "not_met",
+    "title": "Implement solutions to mitigate the risk of system overload"
+  },
+  {
+    "basis": "interview and review",
+    "evidence": [
+      "EV-08"
+    ],
+    "id": "GENOPS03-BP01",
+    "pillar": "Operational excellence",
+    "status": "met",
+    "title": "Implement prompt template management"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-02"
+    ],
+    "id": "GENSEC01-BP01",
+    "pillar": "Security",
+    "status": "not_met",
+    "title": "Grant least privilege access to foundation model endpoints"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-01",
+      "EV-03",
+      "EV-04"
+    ],
+    "id": "GENSEC02-BP01",
+    "pillar": "Security",
+    "status": "not_met",
+    "title": "Implement guardrails to mitigate harmful or incorrect model responses"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-03"
+    ],
+    "id": "GENSEC03-BP01",
+    "pillar": "Security",
+    "status": "not_met",
+    "title": "Implement control plane and data access monitoring to generative AI services and foundation models"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-01",
+      "EV-04"
+    ],
+    "id": "GENSEC04-BP02",
+    "pillar": "Security",
+    "status": "not_met",
+    "title": "Sanitize and validate user inputs to foundation models"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-01"
+    ],
+    "id": "GENREL01-BP01",
+    "pillar": "Reliability",
+    "status": "met",
+    "title": "Scale and balance foundation model throughput as a function of utilization"
+  },
+  {
+    "basis": "interview and review",
+    "evidence": [
+      "EV-05",
+      "EV-08"
+    ],
+    "id": "GENPERF01-BP01",
+    "pillar": "Performance efficiency",
+    "status": "met",
+    "title": "Define a ground truth data set of prompts and responses"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-05",
+      "EV-06"
+    ],
+    "id": "GENCOST01-BP01",
+    "pillar": "Cost optimization",
+    "status": "not_met",
+    "title": "Right-size model selection to optimize inference costs"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-01",
+      "EV-08"
+    ],
+    "id": "GENCOST02-BP01",
+    "pillar": "Cost optimization",
+    "status": "not_met",
+    "title": "Balance cost and performance when selecting inference paradigms"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-01",
+      "EV-03",
+      "EV-06"
+    ],
+    "id": "GENCOST02-BP02",
+    "pillar": "Cost optimization",
+    "status": "not_met",
+    "title": "Optimize resource consumption to minimize hosting costs"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-01"
+    ],
+    "id": "GENCOST03-BP02",
+    "pillar": "Cost optimization",
+    "status": "met",
+    "title": "Control model response length"
+  },
+  {
+    "basis": "scripted check",
+    "evidence": [
+      "EV-01",
+      "EV-08"
+    ],
+    "id": "GENCOST03-BP03",
+    "pillar": "Cost optimization",
+    "status": "not_met",
+    "title": "Implement prompt caching to reduce token costs"
+  },
+  {
+    "basis": "interview and review",
+    "evidence": [
+      "EV-01"
+    ],
+    "id": "GENSUS01-BP01",
+    "pillar": "Sustainability",
+    "status": "met",
+    "title": "Implement auto scaling and serverless architectures to optimize resource utilization"
+  }
+]

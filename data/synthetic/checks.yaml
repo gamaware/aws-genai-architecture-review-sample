@@ -1,0 +1,181 @@
+# One entry per scripted check in scripts/genai_review/checks.py. When a check fails it becomes a finding with the
+# risk, effort, owner and recommendation below. `lever` links a finding to a line of the cost model.
+checks:
+  - id: guardrail-every-route
+    finding: The compare route calls the model with no guardrail
+    risk: high
+    effort: S
+    owner: Platform team
+    evidence: [EV-01, EV-03, EV-04]
+    impact: >-
+      Prompt injection and off-topic or harmful answers on the compare route reach shoppers unfiltered. The log sample
+      holds an injection attempt against that route.
+    recommendation: >-
+      Attach one versioned guardrail to every route: prompt-attack and content filters, the denied competitor-pricing
+      topic, and PII anonymization on input and output. Call it through guardrailConfig on each Converse request.
+    fix: [fixes/terraform/guardrail.tf, fixes/app/assistant.py]
+    lever: guardrail-coverage
+
+  - id: scoped-bedrock-access
+    finding: The Lambda role allows `bedrock:*` on every resource
+    risk: high
+    effort: S
+    owner: Platform team
+    evidence: [EV-02]
+    impact: >-
+      Any code running in the three functions can create or delete guardrails, knowledge bases and model access,
+      change invocation logging, or call any model in any Region.
+    recommendation: >-
+      Replace the statement with bedrock:InvokeModel and bedrock:InvokeModelWithResponseStream on the three
+      application inference profiles and their foundation models, bedrock:ApplyGuardrail on the guardrail,
+      bedrock:Retrieve on the knowledge base, and the batch inference actions for the enrich job only.
+    fix: [fixes/terraform/iam.tf]
+
+  - id: pii-in-logs
+    finding: Application logs keep customer prompts with personal data, unencrypted and forever
+    risk: high
+    effort: M
+    owner: Product engineering
+    evidence: [EV-01, EV-04]
+    impact: >-
+      Phone numbers and loyalty card numbers from shoppers sit in CloudWatch Logs in clear text with no expiry, which
+      widens the data a leaked log or an over-broad log reader exposes.
+    recommendation: >-
+      Stop logging raw prompts (log token counts and request IDs), redact PII in the handler before any log call,
+      anonymize PII in the guardrail, and encrypt the log groups with a customer managed KMS key and a retention period.
+    fix: [fixes/app/assistant.py, fixes/terraform/logging.tf, fixes/terraform/guardrail.tf]
+
+  - id: invocation-logging
+    finding: Model invocation logging is off
+    risk: medium
+    effort: S
+    owner: Platform team
+    evidence: [EV-03]
+    impact: >-
+      Nobody can audit which identity called which model and when, or attribute token use to a route and a caller.
+    recommendation: >-
+      Enable Bedrock model invocation logging to a KMS-encrypted CloudWatch Logs group with one-year retention, with
+      text data delivery off so each record holds the request metadata and token counts only. Bedrock logs the
+      original input even when the guardrail anonymizes PII, so text delivery would copy raw prompts into the logs.
+    fix: [fixes/terraform/logging.tf]
+    lever: invocation-logging
+
+  - id: api-throttling
+    finding: The API has no throttling and no per-channel quota
+    risk: medium
+    effort: M
+    owner: Platform team
+    evidence: [EV-01]
+    impact: >-
+      One misbehaving client or scraper can exhaust the account's Bedrock tokens-per-minute quota for every channel
+      and run up token spend with no ceiling.
+    recommendation: >-
+      Set stage-level throttling and one usage plan per channel (web, mobile app, store kiosk) with rate, burst and
+      daily quota, require an API key on the ask and compare methods (a usage plan only applies to methods that
+      require one), and alarm when the 4XX rate climbs.
+    fix: [fixes/terraform/throttling.tf]
+
+  - id: eval-in-pipeline
+    finding: No evaluation runs before a prompt or model change reaches production
+    risk: medium
+    effort: M
+    owner: Product engineering
+    evidence: [EV-05, EV-07]
+    impact: >-
+      A prompt edit or model switch can lower answer quality without anyone noticing until shoppers complain, and the
+      team cannot adopt a cheaper model safely.
+    recommendation: >-
+      Run the golden set in the pipeline between deploy-staging and deploy-production, and block the release when
+      the pass rate falls under 90% overall or 85% in any category, or when the run misses a route, the shipping
+      model, a category or part of its questions.
+    fix: [fixes/pipeline/evaluate-stage.yaml, fixes/pipeline/golden-set.json, fixes/app/eval_gate.py]
+
+  - id: right-sized-model
+    finding: The ask route uses Claude Sonnet where Claude Haiku meets the quality bar
+    risk: medium
+    effort: S
+    owner: Product engineering
+    evidence: [EV-05, EV-06]
+    impact: The ask route carries most of the token spend and pays for capability its questions do not need.
+    recommendation: >-
+      Move the ask route to Claude Haiku through its application inference profile once the evaluation stage is in
+      the pipeline. Keep Claude Sonnet on compare, where Haiku falls below the bar. On Claude Haiku the ask
+      route's 2,400-token system prompt is below the 4,096-token cache minimum, so that route gets no caching saving.
+    fix: [fixes/terraform/inference_profiles.tf]
+    lever: model-right-size
+    depends_on: [eval-in-pipeline, application-inference-profiles]
+
+  - id: prompt-caching
+    finding: Every interactive request pays full price for the 2,400-token system prompt
+    risk: medium
+    effort: S
+    owner: Product engineering
+    evidence: [EV-01, EV-08]
+    impact: The static system prompt is more than 40% of every interactive request's input tokens.
+    recommendation: >-
+      Put a cache point after the system prompt on each route whose prompt reaches the model's minimum cacheable
+      length: 1,024 tokens for Claude Sonnet 4.5, 4,096 for Claude Haiku 4.5. That is the compare route; once the ask
+      route moves to Claude Haiku its 2,400-token prompt is below the minimum, so it gets no cache point.
+    fix: [fixes/app/assistant.py]
+    lever: prompt-caching
+
+  - id: vector-store-sizing
+    finding: The knowledge base keeps 4 OpenSearch Serverless OCUs running for 2 GB of vectors
+    risk: medium
+    effort: M
+    owner: Platform team
+    evidence: [EV-01, EV-03, EV-06]
+    impact: >-
+      The vector store costs a fixed amount every hour whatever the traffic, for an index that fits in a few gigabytes.
+    recommendation: >-
+      Move the knowledge base to Amazon S3 Vectors, re-ingest, compare retrieval on the golden set, then delete the
+      collection.
+    fix: [fixes/terraform/vectors.tf]
+    lever: vector-store
+    depends_on: [eval-in-pipeline]
+
+  - id: batch-for-offline-jobs
+    finding: The nightly enrich job uses on-demand inference
+    risk: low
+    effort: M
+    owner: Product engineering
+    evidence: [EV-01, EV-08]
+    impact: The job has no latency need but pays the on-demand price for every token.
+    recommendation: >-
+      Submit the nightly descriptions as one Bedrock batch inference job from S3 and read the results back in the
+      morning run.
+    fix: [fixes/app/enrich_batch.py, fixes/terraform/iam.tf]
+    lever: batch-inference
+
+  - id: application-inference-profiles
+    finding: The bill cannot show model usage by route or cost center
+    risk: low
+    effort: S
+    owner: Platform team
+    evidence: [EV-03, EV-06]
+    impact: >-
+      The bill shows one line per model, so the team cannot see which route drives spend or set per-route budgets.
+    recommendation: >-
+      Create one application inference profile per route, tagged with app, route and cost center, and invoke the
+      model through its profile ARN.
+    fix: [fixes/terraform/inference_profiles.tf]
+
+  - id: cross-region-inference
+    finding: Model calls stay in a single Region
+    risk: medium
+    effort: S
+    owner: Platform team
+    evidence: [EV-01]
+    impact: Regional capacity limits throttle the interactive routes at peak.
+    recommendation: Invoke the models through a cross-Region inference profile.
+    fix: []
+
+  - id: max-tokens-set
+    finding: Model responses have no length limit
+    risk: low
+    effort: S
+    owner: Product engineering
+    evidence: [EV-01]
+    impact: Long answers cost more and slow the widget.
+    recommendation: Set maxTokens on every route.
+    fix: []

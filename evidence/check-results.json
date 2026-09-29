@@ -1,0 +1,54 @@
+{
+  "api-throttling": {
+    "observed": "stage throttling unset (rate limit -1); 0 usage plans; 2 of 2 methods accept requests without an API key",
+    "passed": false
+  },
+  "application-inference-profiles": {
+    "observed": "0 application inference profiles for 3 routes",
+    "passed": false
+  },
+  "batch-for-offline-jobs": {
+    "observed": "offline routes on on-demand inference: enrich",
+    "passed": false
+  },
+  "cross-region-inference": {
+    "observed": "every route calls a cross-Region inference profile",
+    "passed": true
+  },
+  "eval-in-pipeline": {
+    "observed": "pipeline stages: lint, unit-test, package, deploy-staging, deploy-production",
+    "passed": false
+  },
+  "guardrail-every-route": {
+    "observed": "GUARDRAIL_ID is empty on: compare",
+    "passed": false
+  },
+  "invocation-logging": {
+    "observed": "get-model-invocation-logging-configuration returns no loggingConfig",
+    "passed": false
+  },
+  "max-tokens-set": {
+    "observed": "every route sets MAX_TOKENS at or below 2048",
+    "passed": true
+  },
+  "pii-in-logs": {
+    "observed": "8 sampled log events hold 1 loyalty card number and 2 phone numbers; 3 of 3 log groups have no KMS key and 2 never expire",
+    "passed": false
+  },
+  "prompt-caching": {
+    "observed": "PROMPT_CACHING is off on ask, compare (system prompt tokens: ask 2,400, compare 2,400)",
+    "passed": false
+  },
+  "right-sized-model": {
+    "observed": "ask uses claude-sonnet; claude-haiku passes 93.6% overall, 90% in its weakest category",
+    "passed": false
+  },
+  "scoped-bedrock-access": {
+    "observed": "assistant-runtime/Bedrock allows `bedrock:*` on `*`",
+    "passed": false
+  },
+  "vector-store-sizing": {
+    "observed": "4 OCUs on average for 2 GB of vector data",
+    "passed": false
+  }
+}
