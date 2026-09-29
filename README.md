@@ -8,6 +8,8 @@ fixes, all generated from data and checked by tests.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Fictional sample](https://img.shields.io/badge/fictional-sample-5b6b7f)
 
+![GenAI architecture and cost review](docs/assets/cover.png)
+
 > **Fictional sample.** Harbor Goods and all data here are fictional. Each repository in this portfolio is a
 > separate engagement with Harbor Goods, a fictional mid-size retailer. Account IDs are AWS documentation examples.
 
