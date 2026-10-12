@@ -1,14 +1,14 @@
 # Harbor Goods: GenAI architecture, security and cost review
 
 > **Fictional sample.** Harbor Goods and all data here are fictional. Each repository in this portfolio is a
-> separate engagement with Harbor Goods, a fictional mid-size retailer. Account IDs are AWS documentation examples.
+> separate engagement with Harbor Goods, a fictional mid-size retailer. Account IDs are shown as placeholders.
 > Every finding and figure in this report comes from the files in `data/`.
 
 | Item | Detail |
 | --- | --- |
 | Client | Harbor Goods (fictional mid-size retailer) |
 | Workload | `product-assistant`: customer-facing product Q&A assistant on Amazon Bedrock |
-| Accounts | Production `111122223333`, staging `444455556666`, shared tooling `123456789012` (AWS documentation example IDs) |
+| Accounts | Production, staging and shared tooling, each shown as `<account-id>` |
 | Region | `us-east-1` |
 | Lens | AWS Well-Architected Generative AI Lens |
 | Access used | Read-only exports, reviewed offline; no changes to the client's accounts |
@@ -142,8 +142,7 @@ open, the change that closes it, and the file in `fixes/` that implements the ch
 
 #### GA-01. The Lambda role allows `bedrock:*` on every resource
 
-*GENSEC01-BP01 Grant least privilege access to foundation model endpoints.* High risk, effort S, owner: Platform team,
-Weeks 1-2.
+*GENSEC01-BP01 Grant scoped access to foundation model endpoints.* High risk, effort S, owner: Platform team, Weeks 1-2.
 
 - **Observed:** assistant-runtime/Bedrock allows `bedrock:*` on `*` (EV-02).
 - **Risk if left open:** Any code running in the three functions can create or delete guardrails, knowledge bases and
@@ -435,7 +434,7 @@ evaluation stage and the inference profiles.
 | GENOPS02-BP02 | Monitor foundation model metrics | Not met | scripted check | EV-03, EV-06 |
 | GENOPS02-BP03 | Implement solutions to mitigate the risk of system overload | Not met | scripted check | EV-01 |
 | GENOPS03-BP01 | Implement prompt template management | Met | interview and review | EV-08 |
-| GENSEC01-BP01 | Grant least privilege access to foundation model endpoints | Not met | scripted check | EV-02 |
+| GENSEC01-BP01 | Grant scoped access to foundation model endpoints | Not met | scripted check | EV-02 |
 | GENSEC02-BP01 | Implement guardrails to mitigate harmful or incorrect model responses | Not met | scripted check | EV-01, EV-03, EV-04 |
 | GENSEC03-BP01 | Implement control plane and data access monitoring to generative AI services and foundation models | Not met | scripted check | EV-03 |
 | GENSEC04-BP02 | Sanitize and validate user inputs to foundation models | Not met | scripted check | EV-01, EV-04 |

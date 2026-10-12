@@ -11,7 +11,7 @@ fixes, all generated from data and checked by tests.
 ![GenAI architecture and cost review](docs/assets/cover.png)
 
 > **Fictional sample.** Harbor Goods and all data here are fictional. Each repository in this portfolio is a
-> separate engagement with Harbor Goods, a fictional mid-size retailer. Account IDs are AWS documentation examples.
+> separate engagement with Harbor Goods, a fictional mid-size retailer. Account IDs are shown as placeholders.
 
 ## Executive summary
 
@@ -181,7 +181,7 @@ Architecture decision records follow the *Fundamentals of Software Architecture*
 | markdownlint, link check, prose lint | CI (shared `lint-docs`) | The report and docs are the product |
 | actionlint, zizmor | CI (shared `lint-actions`) and pre-commit | Workflows keep narrow token access and pinned actions |
 | gitleaks, detect-secrets | CI (shared `secrets`) and pre-commit | No credentials in a public repository |
-| Account ID test | `tests/test_report.py` | Only AWS documentation example account IDs may appear |
+| Account ID test | `tests/test_report.py` | No 12-digit account IDs appear; data and code use `YOUR_AWS_ACCOUNT_ID` |
 
 Workflows start from `permissions: {}`, pin actions to full commit SHAs, and never receive cloud credentials.
 
@@ -200,7 +200,7 @@ Workflows start from `permissions: {}`, pin actions to full commit SHAs, and nev
 Part of the [AWS DevOps portfolio](https://github.com/gamaware/aws-devops-portfolio); it backs the "GenAI
 architecture and cost review" service:
 [GenAI architecture and cost review on Upwork](https://www.upwork.com/freelancers/~014b3520cf9e140103). The method is
-the one Alex uses in audits for ITESO and freelance clients in Guadalajara. Contribution, conduct and support
+the one used in independent audits for client workloads. Contribution, conduct and support
 guidelines come from [gamaware/.github](https://github.com/gamaware/.github); see also [SECURITY.md](SECURITY.md) and
 [CHANGELOG.md](CHANGELOG.md).
 

@@ -15,3 +15,14 @@ The review is a sample deliverable, so each release is a numbered report revisio
   mocked `terraform test` suites, and application fixes (request path, batch job, release gate) with stubbed tests.
 - `report/REPORT.md` with generated blocks, `make verify`, the review method, ADRs and CI calling the shared
   workflows pinned to a commit SHA.
+
+### Changed
+
+- Neutral access wording in the review, placeholder account IDs (`YOUR_AWS_ACCOUNT_ID`) in data, tests and
+  Terraform, and an optional `alarm_topic_arn` input in place of hard-coded ARNs.
+- Terraform input `batch_service_role_arn` is now `batch_service_role_name`; the role ARN is built from the name,
+  the new `batch_service_role_path` input (default `/`) and the caller's account, so `iam:PassRole` names the exact
+  role ARN.
+- `alarm_topic_arn` validation now checks the full SNS topic ARN: partition, Region, 12-digit account and topic name.
+- Lens titles match the Generative AI Lens exactly; the review method lists any title paraphrased under the
+  repository wording policy (GENSEC01-BP01).

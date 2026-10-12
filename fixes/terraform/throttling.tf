@@ -87,7 +87,7 @@ resource "aws_cloudwatch_metric_alarm" "throttled" {
   threshold           = 0.05
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
-  alarm_actions       = [var.alarm_topic_arn]
+  alarm_actions       = var.alarm_topic_arn == null ? [] : [var.alarm_topic_arn]
 
   dimensions = {
     ApiName = var.name_prefix

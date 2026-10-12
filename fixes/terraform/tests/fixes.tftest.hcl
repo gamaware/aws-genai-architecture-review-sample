@@ -80,6 +80,19 @@ run "bedrock_access_is_scoped" {
   }
 }
 
+run "pass_role_targets_the_exact_batch_role_arn" {
+  command = apply
+
+  variables {
+    batch_service_role_path = "/service-role/"
+  }
+
+  assert {
+    condition     = one([for s in data.aws_iam_policy_document.enrich.statement : s.resources if s.sid == "PassBatchRole"]) == toset(["arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/service-role/product-assistant-batch"])
+    error_message = "PassRole must name the batch role ARN with its IAM path."
+  }
+}
+
 run "one_tagged_profile_per_route" {
   command = apply
 

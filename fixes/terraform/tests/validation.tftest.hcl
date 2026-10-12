@@ -37,3 +37,33 @@ run "rejects_burst_below_rate" {
 
   expect_failures = [var.channels]
 }
+
+run "rejects_non_sns_alarm_topic" {
+  command = plan
+
+  variables {
+    alarm_topic_arn = "not-an-arn"
+  }
+
+  expect_failures = [var.alarm_topic_arn]
+}
+
+run "rejects_incomplete_alarm_topic_arn" {
+  command = plan
+
+  variables {
+    alarm_topic_arn = "arn:aws:sns:us-east-1:"
+  }
+
+  expect_failures = [var.alarm_topic_arn]
+}
+
+run "rejects_batch_role_path_without_trailing_slash" {
+  command = plan
+
+  variables {
+    batch_service_role_path = "/service-role"
+  }
+
+  expect_failures = [var.batch_service_role_path]
+}

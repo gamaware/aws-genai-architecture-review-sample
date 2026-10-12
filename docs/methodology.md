@@ -9,6 +9,13 @@ A scoping call agrees the workload, the Generative AI Lens best practices in sco
 read-only exports. `data/synthetic/workload.yaml` and `data/synthetic/lens.yaml` record the scope. The
 review never changes the client's accounts.
 
+Best-practice IDs and titles in `lens.yaml` match the Generative AI Lens exactly, except where the repository wording
+policy requires a paraphrase. Each paraphrased title is listed here with its best-practice ID:
+
+| Best practice | Title in `lens.yaml` | Reason |
+| --- | --- | --- |
+| GENSEC01-BP01 | Grant scoped access to foundation model endpoints | AWS title paraphrased under the repository wording policy |
+
 ## 2. Exports
 
 The client runs read-only commands and sends the output. The review needs:

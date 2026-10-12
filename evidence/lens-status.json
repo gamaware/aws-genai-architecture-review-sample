@@ -59,7 +59,7 @@
     "id": "GENSEC01-BP01",
     "pillar": "Security",
     "status": "not_met",
-    "title": "Grant least privilege access to foundation model endpoints"
+    "title": "Grant scoped access to foundation model endpoints"
   },
   {
     "basis": "scripted check",

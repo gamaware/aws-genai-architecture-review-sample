@@ -33,7 +33,7 @@ pillars:
     name: Security
     best_practices:
       - id: GENSEC01-BP01
-        title: Grant least privilege access to foundation model endpoints
+        title: Grant scoped access to foundation model endpoints
         question: "GENSEC01: How do you manage access to generative AI endpoints?"
         checks: [scoped-bedrock-access]
       - id: GENSEC02-BP01

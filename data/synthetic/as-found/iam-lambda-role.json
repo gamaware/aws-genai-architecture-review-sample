@@ -1,6 +1,6 @@
 {
   "RoleName": "product-assistant-lambda",
-  "Arn": "arn:aws:iam::111122223333:role/product-assistant-lambda",
+  "Arn": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/product-assistant-lambda",
   "AttachedManagedPolicies": [
     {"PolicyName": "AWSLambdaBasicExecutionRole", "PolicyArn": "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"}
   ],
@@ -15,7 +15,7 @@
             "Sid": "ChatHistory",
             "Effect": "Allow",
             "Action": ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Query"],
-            "Resource": "arn:aws:dynamodb:us-east-1:111122223333:table/product-assistant-chat-history"
+            "Resource": "arn:aws:dynamodb:us-east-1:YOUR_AWS_ACCOUNT_ID:table/product-assistant-chat-history"
           }
         ]
       }
