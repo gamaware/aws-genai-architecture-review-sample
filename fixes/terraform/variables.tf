@@ -50,6 +50,17 @@ variable "batch_service_role_name" {
   }
 }
 
+variable "batch_service_role_path" {
+  description = "IAM path of the Bedrock batch service role; part of the exact role ARN the enrich role may pass."
+  type        = string
+  default     = "/"
+
+  validation {
+    condition     = length(var.batch_service_role_path) <= 512 && can(regex("^/([!-~]*/)?$", var.batch_service_role_path))
+    error_message = "Must be an IAM path that starts and ends with a slash, such as / or /service-role/."
+  }
+}
+
 variable "rest_api_id" {
   description = "ID of the existing product-assistant REST API."
   type        = string
@@ -86,8 +97,8 @@ variable "alarm_topic_arn" {
   default     = null
 
   validation {
-    condition     = var.alarm_topic_arn == null || can(regex("^arn:aws[a-z-]*:sns:", var.alarm_topic_arn))
-    error_message = "Must be an SNS topic ARN or null."
+    condition     = var.alarm_topic_arn == null || can(regex("^arn:(aws|aws-cn|aws-us-gov):sns:[a-z]{2}(-[a-z]+)+-[0-9]+:[0-9]{12}:[A-Za-z0-9_-]{1,256}(\\.fifo)?$", var.alarm_topic_arn))
+    error_message = "Must be a full SNS topic ARN (partition, Region, 12-digit account and topic name) or null."
   }
 }
 

@@ -6,10 +6,11 @@ reviews:
   path_instructions:
     - path: "data/**"
       instructions: >-
-        Fictional review inputs for Harbor Goods. Best-practice IDs in lens.yaml must match the AWS
-        Well-Architected Generative AI Lens exactly; titles may be paraphrased in plain wording. Unit prices in
-        pricing.yaml need a source page. No 12-digit account IDs: use the YOUR_AWS_ACCOUNT_ID placeholder. Every
-        data change needs `make evidence` so evidence/ and the report stay in step.
+        Fictional review inputs for Harbor Goods. Best-practice IDs and titles in lens.yaml must match the AWS
+        Well-Architected Generative AI Lens exactly, except where the repository wording policy requires a
+        paraphrase; each paraphrased title must be listed with its best-practice ID in docs/methodology.md. Unit
+        prices in pricing.yaml need a source page. No 12-digit account IDs: use the YOUR_AWS_ACCOUNT_ID placeholder.
+        Every data change needs `make evidence` so evidence/ and the report stay in step.
     - path: "scripts/**"
       instructions: >-
         Check logic, ranking and the cost model are documented in docs/methodology.md and the ADRs. Flag any rule

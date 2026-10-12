@@ -4,7 +4,9 @@ This repository is a fictional sample deliverable: a GenAI architecture, securit
 retailer Harbor Goods' product assistant, mapped to the AWS Well-Architected Generative AI Lens. When reviewing pull
 requests:
 
-- Check that best-practice IDs and titles in `data/synthetic/lens.yaml` match the Generative AI Lens exactly.
+- Check that best-practice IDs and titles in `data/synthetic/lens.yaml` match the Generative AI Lens exactly,
+  except where the repository wording policy requires a paraphrase. Each paraphrased title must be listed with its
+  best-practice ID in `docs/methodology.md`.
 - Check that any change to `data/` or `scripts/` comes with regenerated `evidence/` and report blocks
   (`make evidence`), and that `make verify` would still pass.
 - Terraform in `fixes/terraform/`: no wildcard IAM actions or resources outside the KMS key policy, KMS encryption,
