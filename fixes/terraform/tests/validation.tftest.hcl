@@ -37,3 +37,13 @@ run "rejects_burst_below_rate" {
 
   expect_failures = [var.channels]
 }
+
+run "rejects_non_sns_alarm_topic" {
+  command = plan
+
+  variables {
+    alarm_topic_arn = "not-an-arn"
+  }
+
+  expect_failures = [var.alarm_topic_arn]
+}

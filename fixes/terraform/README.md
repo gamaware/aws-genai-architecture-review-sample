@@ -73,10 +73,10 @@ finding needs; `tests/validation.tftest.hcl` checks the input rules).
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| alarm\_topic\_arn | SNS topic that receives throttling alarms. | `string` | `"arn:aws:sns:us-east-1:111122223333:product-assistant-alerts"` | no |
+| alarm\_topic\_arn | ARN of an existing SNS topic for throttling alarms; null leaves the alarm without an action. | `string` | `null` | no |
 | api\_methods | Methods of the REST API that call the model, keyed by route; each must require an API key. | ```map(object({ resource_id = string http_method = string }))``` | ```{ "ask": { "http_method": "POST", "resource_id": "a1b2c3" }, "compare": { "http_method": "POST", "resource_id": "d4e5f6" } }``` | no |
 | authorizer\_id | ID of the existing Cognito authorizer on the REST API. | `string` | `"cog123"` | no |
-| batch\_service\_role\_arn | Service role Bedrock batch inference assumes to read and write the enrich job's S3 prefix. | `string` | `"arn:aws:iam::111122223333:role/product-assistant-batch"` | no |
+| batch\_service\_role\_name | Name of the service role Bedrock batch inference assumes to read and write the enrich job's S3 prefix. | `string` | `"product-assistant-batch"` | no |
 | channels | Per-channel API quotas: steady rate (requests per second), burst and daily request quota. | ```map(object({ rate_limit = number burst_limit = number daily_quota = number }))``` | ```{ "kiosk": { "burst_limit": 10, "daily_quota": 3000, "rate_limit": 5 }, "mobile": { "burst_limit": 30, "daily_quota": 12000, "rate_limit": 15 }, "web": { "burst_limit": 80, "daily_quota": 40000, "rate_limit": 40 } }``` | no |
 | cost\_center | Cost center tag on the application inference profiles. | `string` | `"digital-product"` | no |
 | embedding\_dimensions | Dimensions of the Titan Text Embeddings V2 vectors in the S3 Vectors index. | `number` | `1024` | no |

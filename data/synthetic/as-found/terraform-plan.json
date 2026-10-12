@@ -11,7 +11,7 @@
           "name": "assistant",
           "values": {
             "enabled": true,
-            "web_acl_id": "arn:aws:wafv2:us-east-1:111122223333:global/webacl/storefront/a1b2c3d4-5678-90ab-cdef-EXAMPLE11111",
+            "web_acl_id": "arn:aws:wafv2:us-east-1:YOUR_AWS_ACCOUNT_ID:global/webacl/storefront/a1b2c3d4-5678-90ab-cdef-EXAMPLE11111",
             "origin": [{"domain_name": "abc123.execute-api.us-east-1.amazonaws.com", "origin_id": "assistant-api"}],
             "tags": {"app": "product-assistant"}
           }
@@ -78,7 +78,7 @@
             "function_name": "product-assistant-ask",
             "runtime": "python3.13",
             "timeout": 30,
-            "role": "arn:aws:iam::111122223333:role/product-assistant-lambda",
+            "role": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/product-assistant-lambda",
             "environment": [
               {
                 "variables": {
@@ -101,7 +101,7 @@
             "function_name": "product-assistant-compare",
             "runtime": "python3.13",
             "timeout": 30,
-            "role": "arn:aws:iam::111122223333:role/product-assistant-lambda",
+            "role": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/product-assistant-lambda",
             "environment": [
               {
                 "variables": {
@@ -124,7 +124,7 @@
             "function_name": "product-assistant-enrich",
             "runtime": "python3.13",
             "timeout": 900,
-            "role": "arn:aws:iam::111122223333:role/product-assistant-lambda",
+            "role": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/product-assistant-lambda",
             "environment": [
               {
                 "variables": {

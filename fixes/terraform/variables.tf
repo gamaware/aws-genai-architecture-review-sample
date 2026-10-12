@@ -39,14 +39,14 @@ variable "knowledge_base_role_name" {
   default     = "product-assistant-kb"
 }
 
-variable "batch_service_role_arn" {
-  description = "Service role Bedrock batch inference assumes to read and write the enrich job's S3 prefix."
+variable "batch_service_role_name" {
+  description = "Name of the service role Bedrock batch inference assumes to read and write the enrich job's S3 prefix."
   type        = string
-  default     = "arn:aws:iam::111122223333:role/product-assistant-batch"
+  default     = "product-assistant-batch"
 
   validation {
-    condition     = can(regex("^arn:aws[a-z-]*:iam::[0-9]{12}:role/", var.batch_service_role_arn))
-    error_message = "Must be an IAM role ARN."
+    condition     = can(regex("^[\\w+=,.@-]{1,64}$", var.batch_service_role_name))
+    error_message = "Must be an IAM role name."
   }
 }
 
@@ -81,9 +81,14 @@ variable "stage_name" {
 }
 
 variable "alarm_topic_arn" {
-  description = "SNS topic that receives throttling alarms."
+  description = "ARN of an existing SNS topic for throttling alarms; null leaves the alarm without an action."
   type        = string
-  default     = "arn:aws:sns:us-east-1:111122223333:product-assistant-alerts"
+  default     = null
+
+  validation {
+    condition     = var.alarm_topic_arn == null || can(regex("^arn:aws[a-z-]*:sns:", var.alarm_topic_arn))
+    error_message = "Must be an SNS topic ARN or null."
+  }
 }
 
 variable "routes" {

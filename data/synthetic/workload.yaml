@@ -8,9 +8,9 @@ workload:
     answers grounded in the product catalog and policy pages.
   owner: Head of digital product
   accounts:
-    production: "111122223333"
-    staging: "444455556666"
-    shared_services: "123456789012"
+    production: "YOUR_AWS_ACCOUNT_ID"
+    staging: "YOUR_AWS_ACCOUNT_ID"
+    shared_services: "YOUR_AWS_ACCOUNT_ID"
   region: us-east-1
 
 scope:

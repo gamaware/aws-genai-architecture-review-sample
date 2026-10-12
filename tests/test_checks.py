@@ -42,7 +42,7 @@ def fix_guardrail(review: Review) -> None:
 def fix_iam(review: Review) -> None:
     statement = review.snapshot.iam_role["InlinePolicies"][0]["PolicyDocument"]["Statement"][0]
     statement["Action"] = ["bedrock:InvokeModel"]
-    statement["Resource"] = ["arn:aws:bedrock:us-east-1:111122223333:application-inference-profile/example"]
+    statement["Resource"] = ["arn:aws:bedrock:us-east-1:YOUR_AWS_ACCOUNT_ID:application-inference-profile/example"]
 
 
 def fix_pii(review: Review) -> None:
@@ -50,7 +50,7 @@ def fix_pii(review: Review) -> None:
         event.pop("prompt", None)
     for group in review.snapshot.resources_of("aws_cloudwatch_log_group").values():
         group["values"]["retention_in_days"] = 365
-        group["values"]["kms_key_id"] = "arn:aws:kms:us-east-1:111122223333:key/example"
+        group["values"]["kms_key_id"] = "arn:aws:kms:us-east-1:YOUR_AWS_ACCOUNT_ID:key/example"
 
 
 def fix_logging(review: Review) -> None:
@@ -72,7 +72,7 @@ def fix_eval(review: Review) -> None:
     review.snapshot.pipeline["stages"].insert(4, {"name": "evaluate-golden-set"})
 
 
-PROFILE_ARN = "arn:aws:bedrock:us-east-1:111122223333:application-inference-profile/{}"
+PROFILE_ARN = "arn:aws:bedrock:us-east-1:YOUR_AWS_ACCOUNT_ID:application-inference-profile/{}"
 US_REGIONS = ("us-east-1", "us-east-2", "us-west-2")
 # What the delivered Terraform creates: one application profile per route, copied from the us. system profile, so
 # each lists the foundation model in the three US Regions. The functions then call the profile ARN as MODEL_ID.

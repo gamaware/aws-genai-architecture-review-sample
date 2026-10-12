@@ -11,7 +11,7 @@ requests:
   and a `terraform test` assertion for each control a finding relies on.
 - Application fixes in `fixes/app/`: no prompt or answer text in logs, a guardrail on every model call, and the
   Bedrock client injected so tests use a stub.
-- Flag any real AWS account ID, ARN, IP address, email address or organization name. The repository allows only AWS
-  documentation example IDs and `example.com`.
+- Flag any real AWS account ID, ARN, IP address, email address or organization name. Account IDs use the
+  `YOUR_AWS_ACCOUNT_ID` placeholder; the only allowed domain is `example.com`.
 - Flag suppressed lint rules; fix violations instead of suppressing them.
 - Workflows: `permissions: {}` at the top, SHA-pinned actions, no `pull_request_target`, no cloud credentials.

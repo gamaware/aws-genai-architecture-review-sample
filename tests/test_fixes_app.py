@@ -14,7 +14,7 @@ import eval_gate
 
 CONFIG = assistant.RouteConfig(
     route="ask",
-    model_id="arn:aws:bedrock:us-east-1:111122223333:application-inference-profile/example",
+    model_id="arn:aws:bedrock:us-east-1:YOUR_AWS_ACCOUNT_ID:application-inference-profile/example",
     guardrail_id="gr-assistant",
     guardrail_version="1",
     max_tokens=512,
@@ -56,7 +56,7 @@ def no_wait() -> assistant.RetryPolicy:
 
 COMPARE = assistant.RouteConfig(
     route="compare",
-    model_id="arn:aws:bedrock:us-east-1:111122223333:application-inference-profile/compare",
+    model_id="arn:aws:bedrock:us-east-1:YOUR_AWS_ACCOUNT_ID:application-inference-profile/compare",
     guardrail_id="gr-assistant",
     guardrail_version="1",
     max_tokens=1024,
@@ -153,8 +153,8 @@ def test_batch_records_and_request():
     assert first["modelInput"]["max_tokens"] == 400
     request = enrich_batch.job_request(
         "enrich-nightly",
-        "arn:aws:bedrock:us-east-1:111122223333:application-inference-profile/enrich",
-        "arn:aws:iam::111122223333:role/product-assistant-batch",
+        "arn:aws:bedrock:us-east-1:YOUR_AWS_ACCOUNT_ID:application-inference-profile/enrich",
+        "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/product-assistant-batch",
         "s3://example-bucket/enrich/in/",
         "s3://example-bucket/enrich/out/",
     )
@@ -173,7 +173,7 @@ def test_batch_submit_skips_small_nights():
 
         def create_model_invocation_job(self, **kwargs):
             self.submitted += 1
-            return {"jobArn": "arn:aws:bedrock:us-east-1:111122223333:model-invocation-job/abc"}
+            return {"jobArn": "arn:aws:bedrock:us-east-1:YOUR_AWS_ACCOUNT_ID:model-invocation-job/abc"}
 
     control = Control()
     assert enrich_batch.submit(control, enrich_batch.MIN_RECORDS - 1, {}) is None

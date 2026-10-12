@@ -15,3 +15,10 @@ The review is a sample deliverable, so each release is a numbered report revisio
   mocked `terraform test` suites, and application fixes (request path, batch job, release gate) with stubbed tests.
 - `report/REPORT.md` with generated blocks, `make verify`, the review method, ADRs and CI calling the shared
   workflows pinned to a commit SHA.
+
+### Changed
+
+- Neutral access wording in the review, placeholder account IDs (`YOUR_AWS_ACCOUNT_ID`) in data, tests and
+  Terraform, and an optional `alarm_topic_arn` input in place of hard-coded ARNs.
+- Terraform input `batch_service_role_arn` is now `batch_service_role_name`; the role ARN is built from the name
+  and the caller's account.

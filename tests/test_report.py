@@ -18,8 +18,6 @@ from genai_review.__main__ import main, outputs
 from genai_review.findings import RISK_ORDER
 from genai_review.render import Renderer, usd
 
-ALLOWED_ACCOUNT_IDS = {"111122223333", "444455556666", "123456789012"}
-
 
 @pytest.fixture
 def report(repo_root) -> str:
@@ -117,7 +115,7 @@ def test_an_unknown_block_is_refused(loaded):
         Renderer(loaded).block("totals")
 
 
-def test_only_documentation_example_account_ids_appear(repo_root):
+def test_no_account_ids_appear(repo_root):
     # Only files git tracks. /usr/bin/git exists on macOS and the Ubuntu CI runner; an absolute literal keeps ruff's
     # S603/S607 satisfied.
     suffixes = {".md", ".yaml", ".yml", ".csv", ".json", ".jsonl", ".py", ".toml", ".tf", ".hcl", ".ini", ".sh"}
@@ -129,4 +127,4 @@ def test_only_documentation_example_account_ids_appear(repo_root):
         if path.suffix not in suffixes or not path.is_file():
             continue
         found = set(re.findall(r"(?<!\d)\d{12}(?!\d)", path.read_text(encoding="utf-8", errors="ignore")))
-        assert found <= ALLOWED_ACCOUNT_IDS, f"{name}: {found - ALLOWED_ACCOUNT_IDS}"
+        assert not found, f"{name}: {found}; use the YOUR_AWS_ACCOUNT_ID placeholder"

@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "enrich" {
   statement {
     sid       = "PassBatchRole"
     actions   = ["iam:PassRole"]
-    resources = [var.batch_service_role_arn]
+    resources = ["arn:${local.partition}:iam::${local.account}:role/${var.batch_service_role_name}"]
 
     condition {
       test     = "StringEquals"
