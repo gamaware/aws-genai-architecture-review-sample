@@ -17,3 +17,4 @@ requests:
   `YOUR_AWS_ACCOUNT_ID` placeholder; the only allowed domain is `example.com`.
 - Flag suppressed lint rules; fix violations instead of suppressing them.
 - Workflows: `permissions: {}` at the top, SHA-pinned actions, no `pull_request_target`, no cloud credentials.
+- Flag job-marketplace profile links, service offers and sales badges; none are allowed.
